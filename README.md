@@ -60,7 +60,7 @@ How to use
 
 Pianoterm needs a midi sequencer. If you decided to use timidity, you will need to run it first using:
 
-	timity -iA &
+	timity -iA -Os &
 
 Then you can run the application by typing
 
