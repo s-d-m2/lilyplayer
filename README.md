@@ -10,6 +10,11 @@ make it executable and then simply run it.
 You can also download [premade music sheets](https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer) and play them with
 lilyplayer.
 
+Building instructions for Web Assembly
+-----------------
+
+To know how to build for WebAssembly, please refer to [the readme file dedicated to webassembly](./README_FOR_WASM.md)
+
 Build dependencies
 ----------------
 
