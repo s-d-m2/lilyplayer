@@ -13,8 +13,6 @@
 #include <limits>
 #include <atomic>
 
-#include <rtmidi/RtMidi.h>
-
 #include "utils.hh"
 #include "keyboard.hh"
 #include "bin_file_reader.hh"
@@ -50,10 +48,13 @@ class MainWindow : public QMainWindow
     void process_music_sheet_event(const music_sheet_event& keys_event);
     void display_music_sheet(const unsigned music_sheet_pos);
     void keyPressEvent(QKeyEvent * event) override;
+
+#if USE_RTMIDI
     static void on_midi_input(double timestamp __attribute__((unused)), std::vector<unsigned char> *message, void* param);
     static void on_midi_error(RtMidiError::Type type, const std::string &errorText, const char* const direction);
     static void on_midi_input_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)));
     static void on_midi_output_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)));
+#endif
 
     void process_keyboard_event(const std::vector<key_down>& keys_down,
 				const std::vector<key_up>& keys_up,
@@ -95,8 +96,10 @@ class MainWindow : public QMainWindow
     QGraphicsSvgItem* svg_rect;
     QTimer signal_checker_timer;
     bin_song_t song;
+#if USE_RTMIDI
     RtMidiOut sound_player;
     RtMidiIn  sound_listener;
+#endif
     std::string selected_output_port = "";
     std::string selected_input_port = "";
 
