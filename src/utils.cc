@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <string>
 #include <cstddef> // for std::size_t
+#include <iostream>
+
 #include "utils.hh"
 #include "bin_file_reader.hh"
 
@@ -161,7 +163,6 @@ template <typename T>
 static
 void list_midi_ports(std::ostream& out, T& player, const char* direction)
 {
-
   const auto nb_ports = player.getPortCount();
   if (nb_ports == 0)
   {
@@ -329,7 +330,6 @@ const char* rt_error_type_as_str(RtMidiError::Type value)
 #if defined(__clang__)
   #pragma clang diagnostic pop
 #endif
-
 
 template <typename T>
 static std::vector<std::string> get_midi_ports_name(T& midi)

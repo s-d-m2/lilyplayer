@@ -1,6 +1,7 @@
 #include <signal.h>
 #include <iostream>
 #include <QFileDialog>
+#include <QActionGroup>
 #include <QMessageBox>
 #include <QKeyEvent>
 #include <QGraphicsSvgItem>

@@ -64,10 +64,12 @@ class MainWindow : public QMainWindow
   signals:
     void midi_message_received(std::vector<unsigned char> bytes);
 
+  public slots:
+    void open_file(); // open the window dialog to select a file
+
   private slots:
     void song_event_loop();
     void replay();
-    void open_file(); // open the window dialog to select a file
     void look_for_signals_change();
     void output_port_change();
     void update_output_ports();

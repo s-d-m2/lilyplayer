@@ -1,4 +1,4 @@
-#include <ostream>
+#include <iostream>
 #include <QApplication>
 #include "signals_handler.hh"
 #include "mainwindow.hh"
