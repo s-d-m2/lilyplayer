@@ -19,8 +19,10 @@ extern volatile sig_atomic_t continue_requested;
 extern volatile sig_atomic_t exit_requested;
 extern volatile sig_atomic_t new_signal_received;
 
-static constexpr const char * const LILYPLAYER_VIRTUAL_MIDI_INPUT = "Lilyplayer listener";
-static constexpr const char * const LILYPLAYER_VIRTUAL_MIDI_OUTPUT = "Lilyplayer sound player";
+namespace {
+  const char * const LILYPLAYER_VIRTUAL_MIDI_INPUT = "Lilyplayer listener";
+  const char * const LILYPLAYER_VIRTUAL_MIDI_OUTPUT = "Lilyplayer sound player";
+}
 
 void MainWindow::look_for_signals_change()
 {
