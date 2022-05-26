@@ -1,5 +1,6 @@
 #include <signal.h>
 #include <iostream>
+#include <sstream>
 #include <QFileDialog>
 #include <QActionGroup>
 #include <QMessageBox>
@@ -9,6 +10,10 @@
 #include "mainwindow.hh"
 #include "ui_mainwindow.hh"
 #include "measures_sequence_extractor.hh"
+
+#if defined(__wasm)
+#include "load_file_from_wasm.hh"
+#endif
 
 // Global variables to "share" state between the signal handler and
 // the main event loop.  Only these two pieces should be allowed to
@@ -267,10 +272,19 @@ void MainWindow::replay()
 
 void MainWindow::open_file(const std::string& filename)
 {
+  try {
+    auto input_song = get_song(filename);
+    this->play_song(std::move(input_song));
+  } catch (...) {
+  }
+}
+
+void MainWindow::play_song(bin_song_t input_song)
+{
   try
   {
     clear_music_scheet();
-    this->song = get_song(filename);
+    this->song = std::move(input_song);
     this->start_pos = 0;
     this->stop_pos = static_cast<decltype(stop_pos)>(this->song.nb_events);
 
@@ -346,6 +360,18 @@ void MainWindow::open_file(const std::string& filename)
   }
 }
 
+#if defined(__wasm)
+void MainWindow::open_file()
+{
+  load_from_wasm(".bin, .*, *", [=](const std::string_view file_content) {
+    try {
+      auto input_song = get_song(file_content);
+      this->play_song(std::move(input_song));
+    } catch (...) {
+    }
+  });
+}
+#else
 void MainWindow::open_file()
 {
   const QStringList filters = [] () { QStringList tmp;
@@ -372,6 +398,8 @@ void MainWindow::open_file()
     }
   }
 }
+#endif
+
 
 void MainWindow::sub_sequence_click()
 {
