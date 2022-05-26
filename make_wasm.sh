@@ -32,7 +32,7 @@ BUILD_DIR_FOR_WASM_TARGET="${FULL_SCRIPT_DIR}/build_dir_for_wasm_target"
 "${UIC}" -o "${THIS_SCRIPT_DIR}/src/ui_mainwindow.hh"  "${THIS_SCRIPT_DIR}/src/mainwindow.ui"
 sed -i '1i // Avoid warnings on generated headers\n#if !defined(__clang__)\n  #pragma GCC system_header\n#endif\n' "${THIS_SCRIPT_DIR}/src/ui_mainwindow.hh"
 sed -i 's/^#include <mainwindow.h>$/#include "mainwindow.hh"/' "${THIS_SCRIPT_DIR}/src/ui_mainwindow.hh"
-sed -i 's/QObject::connect(\(.*\)qOverload<>(&QMainWindow::/\/\/ QObject::connect(\1qOverload<>(\&::MainWindow::/' "${THIS_SCRIPT_DIR}/src/ui_mainwindow.hh"
+sed -i 's/QObject::connect(\(.*\), MainWindow, qOverload<>(&QMainWindow::/QObject::connect(\1, reinterpret_cast<::MainWindow*>(MainWindow), qOverload<>(\&::MainWindow::/' "${THIS_SCRIPT_DIR}/src/ui_mainwindow.hh"
 
 
 OUT_MOC_FILE="${THIS_SCRIPT_DIR}/src/moc_mainwindow.cc"
