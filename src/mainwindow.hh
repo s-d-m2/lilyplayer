@@ -16,6 +16,7 @@
 #include "utils.hh"
 #include "keyboard.hh"
 #include "bin_file_reader.hh"
+#include "sound_player.hh"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++" // Qt is not effective-C++ friendy
@@ -103,6 +104,8 @@ class MainWindow : public QMainWindow
     RtMidiOut sound_player;
     RtMidiIn  sound_listener;
 #endif
+    SoundPlayer sound_player_via_fluidsynth;
+
     std::string selected_output_port = "";
     std::string selected_input_port = "";
 

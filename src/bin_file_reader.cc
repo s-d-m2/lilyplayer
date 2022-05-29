@@ -267,7 +267,7 @@ static bin_song_t get_song_from_file(Readable& file)
   // // reason it is not used is that some version of g++ segfault when compiling this code.
   // // therefore, check from time to time if an updated version of g++ fixed this bug.
   // const auto is_missing_svgs = std::any_of(res.events.cbegin(), res.events.cend(), [=] (const auto& ev) {
-  //     return ev.sheet_events.has_svg_file_change() and (ev.new_svg_file >= nb_svg_files);
+  //     return ev.has_svg_file_change() and (ev.new_svg_file >= nb_svg_files);
   //   });
   // if (is_missing_svgs)
   // {

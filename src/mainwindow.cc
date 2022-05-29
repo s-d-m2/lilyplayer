@@ -79,15 +79,25 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
 void MainWindow::process_keyboard_event(const std::vector<key_down>& keys_down,
 					const std::vector<key_up>& keys_up,
-					const std::vector<midi_message_t>& messages)
+					const std::vector<midi_message_t>& /* messages */)
 {
+  for (auto& key_down : keys_down)
+  {
+    sound_player_via_fluidsynth.note_on(key_down.pitch);
+  }
+
+  for (auto& key_up : keys_up)
+  {
+    sound_player_via_fluidsynth.note_off(key_up.pitch);
+  }
+
   update_keyboard(keys_down, keys_up, this->keyboard);
   this->update();
 
 #if USE_RTMIDI
   if (sound_player.isPortOpen())
   {
-    for (auto message : messages)
+    for (auto& message : messages)
     {
       sound_player.sendMessage(&message);
     }
@@ -231,6 +241,10 @@ void MainWindow::clear_music_scheet()
 void MainWindow::pause_music()
 {
   this->is_in_pause = true;
+
+
+  sound_player_via_fluidsynth.all_notes_off();
+
 #if USE_RTMIDI
   if (sound_player.isPortOpen())
   {
@@ -244,7 +258,7 @@ void MainWindow::pause_music()
     }
 
     const auto midi_messages = get_midi_from_keys_events(std::vector<key_down>(), keys);
-    for (auto message : midi_messages)
+    for (auto& message : midi_messages)
     {
       sound_player.sendMessage(&message);
     }
@@ -432,7 +446,7 @@ void MainWindow::sub_sequence_click()
 
 }
 
-void MainWindow::set_output_port(const unsigned int i)
+void MainWindow::set_output_port(const unsigned int /* i */)
 {
 #if USE_RTMIDI
   try
@@ -578,7 +592,7 @@ void MainWindow::on_midi_output_error(RtMidiError::Type type, const std::string 
 }
 #endif
 
-void MainWindow::set_input_port(unsigned int i)
+void MainWindow::set_input_port(unsigned int /* i */)
 {
 #if USE_RTMIDI
   const auto port_name = sound_listener.getPortName(i);
@@ -625,12 +639,12 @@ void MainWindow::input_change()
     return;
   }
 
-  const auto clicked_button = *std::find_if(button_list.cbegin(), button_list.cend(), [] (const auto& button) {
-											return button->isChecked();
-											 });
 
   this->clear_music_scheet();
 #if USE_RTMIDI
+  const auto clicked_button = *std::find_if(button_list.cbegin(), button_list.cend(), [] (const auto& button) {
+											return button->isChecked();
+											 });
   this->selected_input_port = clicked_button->text().toStdString();
 
   const auto nb_ports_with_selected_input_name = [&] () {
@@ -774,6 +788,7 @@ MainWindow::MainWindow(QWidget *parent) :
   sound_player(RtMidi::LINUX_ALSA, LILYPLAYER_VIRTUAL_MIDI_OUTPUT),
   sound_listener(RtMidi::LINUX_ALSA, LILYPLAYER_VIRTUAL_MIDI_INPUT),
 #endif
+  sound_player_via_fluidsynth(),
   is_in_pause(true)
 {
   ui->setupUi(this);

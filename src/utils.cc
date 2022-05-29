@@ -187,7 +187,7 @@ void list_midi_ports(std::ostream& out, T& player, const char* direction)
 
 }
 
-void list_midi_ports(std::ostream& out)
+void list_midi_ports(std::ostream& /* out */)
 {
 #if USE_RTMIDI
   RtMidiOut out_player;
