@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <algorithm>
 #include <cstring> // for std::memcmp
 
@@ -9,8 +10,8 @@
 #include "bin_file_reader.hh"
 #include "utils.hh"
 
-template <typename T>
-static T read_big_endian(std::fstream& file)
+template <typename T, typename Readable>
+static T read_big_endian(Readable& file)
 {
   T res = 0;
   for (unsigned int i = 0; i < sizeof(T); ++i)
@@ -22,7 +23,8 @@ static T read_big_endian(std::fstream& file)
   return res;
 };
 
-static bool is_header_correct(std::fstream& file, const char expected[4])
+template <typename Readable>
+static bool is_header_correct(Readable& file, const char expected[4])
 {
   char buffer[4];
   file.read(buffer, sizeof(buffer));
@@ -31,8 +33,9 @@ static bool is_header_correct(std::fstream& file, const char expected[4])
     (std::memcmp(buffer, expected, sizeof(buffer)) == 0);
 }
 
+template <typename Readable>
 static
-std::string read_string(std::fstream& file)
+std::string read_string(Readable& file)
 {
   std::string res;
 
@@ -46,9 +49,9 @@ std::string read_string(std::fstream& file)
   return res;
 }
 
-
+template <typename Readable>
 static
-music_sheet_event read_grouped_event(std::fstream& file)
+music_sheet_event read_grouped_event(Readable& file)
 {
   music_sheet_event res;
 
@@ -172,16 +175,11 @@ music_sheet_event read_grouped_event(std::fstream& file)
   return res;
 }
 
-bin_song_t get_song(const std::string& filename)
+
+
+template <typename Readable>
+static bin_song_t get_song_from_file(Readable& file)
 {
-  std::fstream file(filename, std::ios::binary | std::ios::in);
-
-  if (not file.is_open())
-  {
-    throw std::runtime_error(std::string{"Error: unable to open midi file ["}
-			     + filename + "]");
-  }
-
   // file must start by the magic number 'LPYP'
   const char file_header[4] = { 'L', 'P', 'Y', 'P' };
   if (not is_header_correct(file, file_header))
@@ -329,4 +327,24 @@ bin_song_t get_song(const std::string& filename)
   res.nb_events = res.events.size();
 
   return res;
+}
+
+
+bin_song_t get_song(const std::string& filename) {
+  std::fstream file(filename, std::ios::binary | std::ios::in);
+
+  if (not file.is_open())
+  {
+    throw std::runtime_error(std::string{"Error: unable to open midi file ["}
+			     + filename + "]");
+  }
+
+  return get_song_from_file<>(file);
+}
+
+bin_song_t get_song(const std::string_view& file_content) {
+  std::stringstream file_data;
+  file_data.write(file_content.data(), static_cast<std::streamsize>(file_content.size()));
+
+  return get_song_from_file<>(file_data);
 }

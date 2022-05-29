@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <QByteArray>
 #include <QRectF>
 
@@ -109,8 +110,7 @@ struct bin_song_t
     std::vector<svg_data> svg_files;
 };
 
-
-
 bin_song_t get_song(const std::string& filename);
+bin_song_t get_song(const std::string_view& content);
 
 #endif /* BIN_FILE_READER_HH */

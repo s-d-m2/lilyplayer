@@ -2,7 +2,8 @@
 #include <stdexcept>
 #include <string>
 #include <cstddef> // for std::size_t
-#include <rtmidi/RtMidi.h>
+#include <iostream>
+
 #include "utils.hh"
 #include "bin_file_reader.hh"
 
@@ -162,7 +163,6 @@ template <typename T>
 static
 void list_midi_ports(std::ostream& out, T& player, const char* direction)
 {
-
   const auto nb_ports = player.getPortCount();
   if (nb_ports == 0)
   {
@@ -189,6 +189,7 @@ void list_midi_ports(std::ostream& out, T& player, const char* direction)
 
 void list_midi_ports(std::ostream& out)
 {
+#if USE_RTMIDI
   RtMidiOut out_player;
   list_midi_ports(out, out_player, "output");
 
@@ -196,13 +197,17 @@ void list_midi_ports(std::ostream& out)
 
   RtMidiIn in_player;
   list_midi_ports(out, in_player, "input");
-
+#endif
 }
 
 static unsigned int get_nb_output_ports()
 {
+#if USE_RTMIDI
   RtMidiOut player;
   return player.getPortCount();
+#else
+  return 0;
+#endif
 }
 
 unsigned int get_port(const std::string& s)
@@ -221,6 +226,7 @@ unsigned int get_port(const std::string& s)
   }
   catch (std::invalid_argument&)
   {
+#if USE_RTMIDI
     // argument is not a number, let's see if it matches the name of one of the output
     for (auto i = decltype(nb_outputs){0}; i < nb_outputs; ++i)
     {
@@ -230,7 +236,7 @@ unsigned int get_port(const std::string& s)
 	return i;
       }
     }
-
+#endif
     std::cerr << "Warning: invalid port\n";
     return 0;
   }
@@ -291,6 +297,7 @@ uint16_t find_music_sheet_pos(const std::vector<music_sheet_event>& events, unsi
 }
 
 
+#if USE_RTMIDI
 
 #if defined(__clang__)
   // clang will complain in a switch that the default case is useless
@@ -324,7 +331,6 @@ const char* rt_error_type_as_str(RtMidiError::Type value)
   #pragma clang diagnostic pop
 #endif
 
-
 template <typename T>
 static std::vector<std::string> get_midi_ports_name(T& midi)
 {
@@ -352,6 +358,7 @@ std::vector<std::string> get_output_midi_ports_name(RtMidiOut& midi_player)
 {
   return get_midi_ports_name(midi_player);
 }
+#endif // USE_RTMIDI
 
 
 bool begins_by(const std::string& haystack, const char* const needle)

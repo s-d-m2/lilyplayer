@@ -1,6 +1,9 @@
 all lilyplayer:
 	${MAKE} -C ./src "$@"
 
+wasm:
+	./make_wasm.sh
+
 clean:
 	${MAKE} -C ./src "$@"
 	${MAKE} -C ./3rd-party/rtmidi/ "$@"

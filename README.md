@@ -10,6 +10,11 @@ make it executable and then simply run it.
 You can also download [premade music sheets](https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer) and play them with
 lilyplayer.
 
+Building instructions for Web Assembly
+-----------------
+
+To know how to build for WebAssembly, please refer to [the readme file dedicated to webassembly](./README_FOR_WASM.md)
+
 Build dependencies
 ----------------
 
@@ -28,7 +33,7 @@ consider installing `timidity`
 
 On `debian`, one can install them the following way:
 
-	sudo apt-get install timidity libqt5widgets5 libqt5gui5 libqt5core5a qt5-default qt5-qmake g++-5 libqt5svg5 libqt5svg5-dev \
+	sudo apt-get install timidity libqt5widgets5 libqt5gui5 libqt5core5a qtbase5-dev qt5-qmake g++ libqt5svg5 libqt5svg5-dev \
 	  gawk sed autoconf libtool libasound2-dev
 
 There is no need to install librtmidi packages as it is already included in this repository as a submode. Cloning this repository
