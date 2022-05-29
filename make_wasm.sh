@@ -41,4 +41,4 @@ OUT_MOC_FILE="${THIS_SCRIPT_DIR}/src/moc_mainwindow.cc"
 # the generated code must be compiled in C++17 mode minimum, and the generated Makefile
 # doesn't specify the version.
 
-make -C "${BUILD_DIR_FOR_WASM_TARGET}" CXXFLAGS='-std=c++17'
+make -C "${BUILD_DIR_FOR_WASM_TARGET}" CXXFLAGS='-std=c++17 -O2'
