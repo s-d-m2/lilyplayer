@@ -82,14 +82,25 @@ em++ ${COMPILE_FLAGS} -c -std=c++17 -O2 -I/home/sam/code/fluisynth_test/fluidsyn
 cp -f /home/sam/code/Qt/6.3.0/wasm_32/plugins/platforms/qtloader.js /home/sam/code/lilyplayer-gui/build_dir_for_wasm_target
 cp -f /home/sam/code/Qt/6.3.0/wasm_32/plugins/platforms/qtlogo.svg /home/sam/code/lilyplayer-gui/build_dir_for_wasm_target
 
-em++ ${COMPILE_FLAGS} -s WASM=1 -s FULL_ES2=1 -s FULL_ES3=1 -s USE_WEBGL2=1 \
+em++ ${COMPILE_FLAGS}  \
      -s ASYNCIFY=1 \
-     -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s EXPORTED_RUNTIME_METHODS=[UTF16ToString,stringToUTF16] \
-     --bind -s FETCH=1 -s MODULARIZE=1 -s EXPORT_NAME=createQtAppInstance \
-     -g2 -s WASM=1 -s FULL_ES2=1 -s FULL_ES3=1 -s USE_WEBGL2=1 \
-     -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s EXPORTED_RUNTIME_METHODS=[UTF16ToString,stringToUTF16] \
-     --bind -s FETCH=1 -s MODULARIZE=1 -s EXPORT_NAME=createQtAppInstance -s ASSERTIONS=2 \
-     -s DEMANGLE_SUPPORT=1 -s GL_DEBUG=1 --profiling-funcs -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=64MB  \
+     -s ERROR_ON_UNDEFINED_SYMBOLS=1 \
+     -s EXPORTED_RUNTIME_METHODS=[UTF16ToString,stringToUTF16] \
+     --bind \
+     -s FETCH=1 \
+     -s MODULARIZE=1 \
+     -s EXPORT_NAME=createQtAppInstance \
+     -g2 \
+     -s WASM=1 \
+     -s FULL_ES2=1 \
+     -s FULL_ES3=1 \
+     -s USE_WEBGL2=1 \
+     -s ASSERTIONS=2 \
+     -s DEMANGLE_SUPPORT=1 \
+     -s GL_DEBUG=1 \
+     --profiling-funcs \
+     -s ALLOW_MEMORY_GROWTH=1 \
+     -s INITIAL_MEMORY=64MB  \
      -o ./lilyplayer.js  main.o mainwindow.o keyboard.o signals_handler.o bin_file_reader.o utils.o measures_sequence_extractor.o \
      moc_mainwindow.o load_file_from_wasm.o sound_player.o lilyplayer.js_plugin_import.o  \
      --embed-file /home/sam/Yamaha-Grand-Lite-v2.0.sf2@/tmp/Yamaha-Grand-Lite-v2.0.sf2 \
