@@ -18,6 +18,7 @@ MKDIR := mkdir
 OUTPUT_DIR := $(shell realpath ./build_dir_for_wasm_output)
 THIS_DIR := $(shell realpath .)
 
+APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
 UI_MAINWINDOW_HH := ${OUTPUT_DIR}/ui_mainwindow.hh
 MOC_FILE := ${OUTPUT_DIR}/moc_mainwindow.cc
 
@@ -26,9 +27,23 @@ QT_CORE_LIB := ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a
 
 # ## Need to install qtsharedtools with the maintenance tools
 
+APP_SRC := ${THIS_DIR}/src/main.cc  \
+	   ${THIS_DIR}/src/mainwindow.cc \
+	   ${THIS_DIR}/src/keyboard.cc \
+	   ${THIS_DIR}/src/signals_handler.cc \
+	   ${THIS_DIR}/src/bin_file_reader.cc \
+	   ${THIS_DIR}/src/utils.cc \
+	   ${THIS_DIR}/src/measures_sequence_extractor.cc \
+	   ${THIS_DIR}/src/sound_player.cc \
+	   ${THIS_DIR}/src/load_file_from_wasm.cc
 
-all: ${UI_MAINWINDOW_HH} ${MOC_FILE} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+APP_OBJS := ${APP_SRC:${THIS_DIR}/src/%.cc=${APP_OBJS_OUTPUT_DIR}/%.o}
 
+
+all: app
+
+${APP_OBJS_OUTPUT_DIR}: ${OUTPUT_DIR}
+	"${MKDIR}" -p "$@"
 
 ${OUTPUT_DIR}:
 	"${MKDIR}" -p "$@"
@@ -102,9 +117,28 @@ ${QT_CORE_LIB}: ${OUTPUT_DIR}
 
 qt: ${QT_CORE_LIB}
 
+${APP_OBJS_OUTPUT_DIR}/%.o: ${THIS_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+	${EMCC} \
+	  -pthread \
+	  -O2 \
+	  -std=c++17 \
+	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
+	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
+	  -I ${QT_HOME}/wasm_32/include \
+	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
+	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
+	  -I ${QT_HOME}/wasm_32/include/QtSvg \
+	  -I ${QT_HOME}/wasm_32/include/QtGui \
+	  -I ${QT_HOME}/wasm_32/include/QtCore \
+	  -c \
+	  -o "$@" \
+	  "$<"
 
+app_objs: ${APP_OBJS}
+
+app: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_FILE}
 
 clean:
 	[ -d "${OUTPUT_DIR}" ] && rm -rf "${OUTPUT_DIR}"
 
-.PHONY: all clean ${FLUIDSYNTH_LIB} fluidsynth qt ${QT_CORE_LIB}
+.PHONY: all clean ${FLUIDSYNTH_LIB} fluidsynth qt ${QT_CORE_LIB} app app_objs
