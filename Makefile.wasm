@@ -120,13 +120,13 @@ ${QT_CORE_LIB}: ${OUTPUT_DIR}
 	    -no-dbus \
 	    -no-glib \
 	    -no-ssl \
+	    -no-openssl \
 	    -nomake examples \
 	    -feature-thread \
 	    -xplatform wasm-emscripten \
 	    -opensource \
 	    -confirm-license \
-	    -submodules qtgui,qtwidgets,qtsvg \
-	    -skip qtdeclarative,qtdoc,qttools,qtdatavis3d,qtcharts,qt5compat,qtmultimedia,qtlottie,qtmqtt,qtopcua,qtquicktimeline,qtquick3d,qtscxml,qttranslations,qtvirtualkeyboard,qtwebengine,qtwebview,qtquick3d,qtwayland,qtwebglplugin,qtxmlpatterns,qtpositioning,qtgamepad,qtcanvas3d,qtconnectivity,qt3d,qtremoteobjects \
+	    -submodules qtgui,qtwidgets,qtsvg,qtbase \
 	    -- -B "${OUTPUT_DIR}/qt" || exit 5 ; \
 	  ninja --verbose -C "${OUTPUT_DIR}/qt" || exit 6 ; \
 	fi
