@@ -12,9 +12,8 @@ static void usage(const char* const prog_name, std::ostream& out_stream = std::c
   out_stream << "Usage: " << prog_name << " [Options] [file]\n"
     "\n"
     "Options:\n"
-    "  -h, --help			print this help\n"
-    "  -l, --list			list the midi output ports available for use\n"
-    "  -i, --input-port <NUM>	the input midi to use if no file is provided\n";
+    "  -h, --help		print this help\n"
+    "  -i, --input-port	use midi input port as music source (default when no file is given)\n";
 }
 
 struct options
@@ -22,8 +21,7 @@ struct options
     bool has_error;
     bool print_help;
     bool list_ports;
-    unsigned int input_port;
-    bool was_input_port_set;
+    bool use_midi_input;
 
     std::string filename;
 
@@ -31,8 +29,7 @@ struct options
       : has_error (false)
       , print_help (false)
       , list_ports (false)
-      , input_port (0)
-      , was_input_port_set (false)
+      , use_midi_input (false)
       , filename ("")
     {
     }
@@ -60,17 +57,7 @@ struct options get_opts(const int argc, const char * const * const argv)
 
     if ((arg == "-i") or (arg == "--input-port"))
     {
-      if (i == argc - 1)
-      {
-	res.has_error = true;
-	return res;
-      }
-      else
-      {
-	++i;
-	res.input_port = get_port(argv[i]);
-	res.was_input_port_set = true;
-      }
+      res.use_midi_input = true;
       continue;
     }
 

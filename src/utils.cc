@@ -195,48 +195,6 @@ void list_midi_ports(std::ostream& out)
 #endif
 }
 
-static unsigned int get_nr_input_ports()
-{
-#if USE_RTMIDI
-  RtMidiIn listener;
-  return listener.getPortCount();
-#else
-  return 0;
-#endif
-}
-
-unsigned int get_port(const std::string& s)
-{
-  const auto nr_input_ports = get_nr_input_ports();
-
-  try
-  {
-    const auto res = std::stoi(s);
-    if ((res < 0) or (static_cast<unsigned int>(res) >= nr_input_ports))
-    {
-      std::cerr << "Warning: invalid port\n";
-      return 0;
-    }
-    return static_cast<unsigned int>(res);
-  }
-  catch (std::invalid_argument&)
-  {
-#if USE_RTMIDI
-    // argument is not a number, let's see if it matches the name of one of the output
-    for (auto i = decltype(nr_input_ports){0}; i < nr_input_ports; ++i)
-    {
-      RtMidiIn listener;
-      if (s == listener.getPortName(i))
-      {
-	return i;
-      }
-    }
-#endif
-    std::cerr << "Warning: invalid port\n";
-    return 0;
-  }
-}
-
 
 std::string get_first_svg_line(const std::vector<uint8_t>& data)
 {
