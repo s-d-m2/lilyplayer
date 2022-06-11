@@ -50,6 +50,8 @@ RESOURCE_OBJ :=  ${OUTPUT_DIR}/generated/resources.o
 JS_PLUGIN_IMPORT_SRC := ${OUTPUT_DIR}/generated/lilyplayer.js_plugin_import.cpp
 JS_PLUGIN_IMPORT_OBJ := ${OUTPUT_DIR}/generated/lilyplayer.js_plugin_import.o
 
+LILYPLAYER_JS := ${OUTPUT_DIR}/lilyplayer.js
+LILYPLAYER_HTML := ${OUTPUT_DIR}/lilyplayer.html
 
 all: app
 
@@ -131,12 +133,12 @@ ${QT_CORE_LIB}: ${OUTPUT_DIR}
 
 qt: ${QT_CORE_LIB}
 
-${OUTPUT_DIR}/lilyplayer.html: ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg
-	"${SED}" -e 's/@APPNAME@/lilyplayer/g' ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html > ${OUTPUT_DIR}/lilyplayer.html
+${LILYPLAYER_HTML}: ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg
+	"${SED}" -e 's/@APPNAME@/lilyplayer/g' ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html > "$@"
 	cp -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${OUTPUT_DIR}
 	cp -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
 
-loader: ${OUTPUT_DIR}/lilyplayer.html
+loader: ${LILYPLAYER_HTML}
 
 ${APP_OBJS_OUTPUT_DIR}/%.o: ${THIS_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
 	${EMCC} \
@@ -180,7 +182,7 @@ ${OUTPUT_DIR}/generated/%.o: ${OUTPUT_DIR}/generated/%.cc ${GENERATED_DIR}
 
 resource: ${RESOURCE_OBJ}
 
-${JS_PLUGIN_IMPORT_SRC}: ${THIS_DIR}/wasm/lilyplayer.pro
+${JS_PLUGIN_IMPORT_SRC}: ${THIS_DIR}/wasm/lilyplayer.pro | ${GENERATED_DIR}
 	${WASM_QMAKE} -o ${OUTPUT_DIR}/generated "$<"
 
 ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC}
@@ -202,7 +204,7 @@ ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC}
 
 js_plugin_import: ${JS_PLUGIN_IMPORT_OBJ}
 
-app: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT} loader
+${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT_OBJ} ${LILYPLAYER_HTML}
 	${EMCC} \
 	  -pthread \
 	  -s ASYNCIFY=0 \
@@ -225,7 +227,7 @@ app: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ}
 	  -s INITIAL_MEMORY=120MB \
 	  -s USE_PTHREADS=1 \
 	  -s PTHREAD_POOL_SIZE=4 \
-	  -o ${OUTPUT_DIR}/lilyplayer.js \
+	  -o "$@" \
 	  ${APP_OBJS} \
 	  ${MOC_OBJ} \
 	  ${RESOURCE_OBJ} \
@@ -237,19 +239,12 @@ app: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ}
 	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6BundledLibpng.a \
 	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6BundledPcre2.a \
 	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Concurrent.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6DeviceDiscoverySupport.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6FbSupport.a \
 	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Gui.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Network.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGL.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGLWidgets.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6PrintSupport.a \
 	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Svg.a \
 	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6SvgWidgets.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Test.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGL.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGLWidgets.a \
 	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Widgets.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Xml.a \
 	  ${OUTPUT_DIR}/qt/qtbase/plugins/generic/libqtuiotouchplugin.a \
 	  ${OUTPUT_DIR}/qt/qtbase/plugins/iconengines/libqsvgicon.a \
 	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqgif.a \
@@ -257,17 +252,15 @@ app: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ}
 	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqjpeg.a \
 	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqsvg.a \
 	  ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/libqwasm.a \
-	  ${OUTPUT_DIR}/qt/qtbase/plugins/tls/libqcertonlybackend.a \
 	  ${JS_PLUGIN_IMPORT_OBJ} \
 	  ${OUTPUT_DIR}/qt/qtbase/src/plugins/platforms/wasm/CMakeFiles/QWasmIntegrationPlugin_resources_1.dir/.rcc/qrc_wasmfonts.cpp.o \
 	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
-	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_2.dir/.rcc/qrc_qstyle1.cpp.o \
 	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
-	  --embed-file /home/sam/Yamaha-Grand-Lite-v2.0.sf2@/tmp/Yamaha-Grand-Lite-v2.0.sf2
+	  --embed-file ${THIS_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2@/tmp/Yamaha-Grand-Lite-v2.0.sf2
 
-
+app: ${LILYPLAYER_JS}
 
 clean:
 	[ -d "${OUTPUT_DIR}" ] && rm -rf "${OUTPUT_DIR}"
 
-.PHONY: all clean ${FLUIDSYNTH_LIB} fluidsynth qt ${QT_CORE_LIB} app app_objs loader js_plugin_import
+.PHONY: all clean fluidsynth qt app app_objs loader js_plugin_import
