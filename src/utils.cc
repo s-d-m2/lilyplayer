@@ -347,12 +347,6 @@ std::vector<std::string> get_input_midi_ports_name(RtMidiIn& midi_listener)
 {
   return get_midi_ports_name(midi_listener);
 }
-
-
-std::vector<std::string> get_output_midi_ports_name(RtMidiOut& midi_player)
-{
-  return get_midi_ports_name(midi_player);
-}
 #endif // USE_RTMIDI
 
 
