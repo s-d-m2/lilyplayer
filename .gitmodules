@@ -1,3 +1,12 @@
 [submodule "3rd-party/rtmidi"]
 	path = 3rd-party/rtmidi
 	url = https://github.com/thestk/rtmidi
+[submodule "3rd-party/fluidsynth"]
+	path = 3rd-party/fluidsynth
+	url = https://github.com/FluidSynth/fluidsynth/
+[submodule "3rd-party/fluidsynth-emscripten"]
+	path = 3rd-party/fluidsynth-emscripten
+	url = https://github.com/jet2jet/fluidsynth-emscripten
+[submodule "3rd-party/qt5"]
+	path = 3rd-party/qt5
+	url = git://code.qt.io/qt/qt5.git

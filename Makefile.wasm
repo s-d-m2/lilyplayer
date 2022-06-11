@@ -1,0 +1,266 @@
+EMSDK_ROOT := /home/sam/code/emsdk
+QT_HOME := /home/sam/code/Qt/6.3.0
+
+EMCC := ${EMSDK_ROOT}/upstream/emscripten/emcc
+EMCXX := ${EMSDK_ROOT}/upstream/emscripten/em++
+EMCMAKE := ${EMSDK_ROOT}/upstream/emscripten/emcmake
+EMMAKE := ${EMSDK_ROOT}/upstream/emscripten/emmake
+
+WASM_QMAKE := ${QT_HOME}/wasm_32/bin/qmake
+
+UIC := ${QT_HOME}/gcc_64/libexec/uic
+MOC := ${QT_HOME}/gcc_64/libexec/moc
+RCC := ${QT_HOME}/gcc_64/libexec/rcc
+
+SED := sed
+MKDIR := mkdir
+
+OUTPUT_DIR := $(shell realpath ./build_dir_for_wasm_output)
+THIS_DIR := $(shell realpath .)
+
+APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
+
+GENERATED_DIR := ${OUTPUT_DIR}/generated
+UI_MAINWINDOW_HH := ${GENERATED_DIR}/ui_mainwindow.hh
+MOC_FILE := ${GENERATED_DIR}/moc_mainwindow.cc
+MOC_OBJ := ${GENERATED_DIR}/moc_mainwindow.o
+
+FLUIDSYNTH_LIB := ${OUTPUT_DIR}/libfluidsynth.a
+QT_CORE_LIB := ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a
+
+# ## Need to install qtsharedtools with the maintenance tools
+
+APP_SRC := ${THIS_DIR}/src/main.cc  \
+	   ${THIS_DIR}/src/mainwindow.cc \
+	   ${THIS_DIR}/src/keyboard.cc \
+	   ${THIS_DIR}/src/signals_handler.cc \
+	   ${THIS_DIR}/src/bin_file_reader.cc \
+	   ${THIS_DIR}/src/utils.cc \
+	   ${THIS_DIR}/src/measures_sequence_extractor.cc \
+	   ${THIS_DIR}/src/sound_player.cc \
+	   ${THIS_DIR}/src/load_file_from_wasm.cc
+
+APP_OBJS := ${APP_SRC:${THIS_DIR}/src/%.cc=${APP_OBJS_OUTPUT_DIR}/%.o}
+
+RC_FILE := ${THIS_DIR}/qdarkstyle/style.qrc
+
+RESOURCE_CODE := ${OUTPUT_DIR}/generated/resources.cc
+RESOURCE_OBJ :=  ${OUTPUT_DIR}/generated/resources.o
+
+JS_PLUGIN_IMPORT_SRC := ${OUTPUT_DIR}/generated/lilyplayer.js_plugin_import.cpp
+JS_PLUGIN_IMPORT_OBJ := ${OUTPUT_DIR}/generated/lilyplayer.js_plugin_import.o
+
+LILYPLAYER_JS := ${OUTPUT_DIR}/lilyplayer.js
+LILYPLAYER_HTML := ${OUTPUT_DIR}/lilyplayer.html
+
+all: app
+
+${APP_OBJS_OUTPUT_DIR}: ${OUTPUT_DIR}
+	"${MKDIR}" -p "$@"
+
+${OUTPUT_DIR}:
+	"${MKDIR}" -p "$@"
+
+${GENERATED_DIR}: ${OUTPUT_DIR}
+	"${MKDIR}" -p "$@"
+
+${FLUIDSYNTH_LIB}: ${OUTPUT_DIR}
+	set -eux ; \
+	if [ -e "$@" ] ; then \
+	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
+	else \
+	  "${EMSDK_ROOT}/emsdk" activate || exit 2 ; \
+	  cd "${EMSDK_ROOT}" || exit 3 ; \
+	  . "${EMSDK_ROOT}/emsdk_env.sh" || exit 4 ; \
+	  "${MKDIR}" -p "${OUTPUT_DIR}/fluidsynth-emscripten" || exit 5 ; \
+	  "${EMCMAKE}" cmake -Denable-oss=off \
+	                -D CMAKE_BUILD_TYPE=Release \
+	                -D BUILD_SHARED_LIBS=off \
+	                -D CMAKE_C_FLAGS=-D__EMSCRIPTEN_PTHREADS__=1 \
+	                -S "${THIS_DIR}/3rd-party/fluidsynth-emscripten/" \
+	                -B "${OUTPUT_DIR}/fluidsynth-emscripten" ; \
+	  "${EMMAKE}" make -C "${OUTPUT_DIR}/fluidsynth-emscripten"  V=1 VERBOSE=1 -j || exit 6 ; \
+	  FLUID_LIB="$$(find "${OUTPUT_DIR}/fluidsynth-emscripten" -name 'libfluidsynth.a' | head -n 1)" ; \
+	  [ -f "$$FLUID_LIB" ] || exit 7 ; \
+	  cp -- "$$FLUID_LIB" "$@" || exit 8 ; \
+	fi
+
+
+
+fluidsynth: ${FLUIDSYNTH_LIB}
+
+${UI_MAINWINDOW_HH}: ${THIS_DIR}/src/mainwindow.ui | ${GENERATED_DIR}
+	"${UIC}" -o "$@" "$<"
+	"${SED}" -i '1i // Avoid warnings on generated headers\n#if !defined(__clang__)\n  #pragma GCC system_header\n#endif\n' "$@"
+	"${SED}" -i 's/^#include <mainwindow.h>$$/#include "mainwindow.hh"/' "$@"
+	"${SED}" -i 's/QObject::connect(\(.*\), MainWindow, qOverload<>(&QMainWindow::/QObject::connect(\1, reinterpret_cast<::MainWindow*>(MainWindow), qOverload<>(\&::MainWindow::/' "$@"
+
+${MOC_FILE}:  ${THIS_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
+	"${MOC}" -o "$@" "$<"
+
+
+${QT_CORE_LIB}: ${OUTPUT_DIR}
+	if [ -e "$@" ] ; then \
+	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
+	else \
+	  cd "${THIS_DIR}/3rd-party/qt5/" || exit 2 ; \
+	  "${THIS_DIR}/3rd-party/qt5/init-repository"  \
+	    --module-subset=qtsvg,qtbase,qtimageformats \
+	    -f || exit 3 ; \
+	  cd "${THIS_DIR}/3rd-party/qt5/" || exit 4 ; \
+	  "${THIS_DIR}/3rd-party/qt5/configure" \
+	    -static \
+	    -release \
+	    -no-guess-compiler \
+	    -qt-host-path "${QT_HOME}/gcc_64/" \
+	    -c++std c++17 \
+	    -sse2 \
+	    -gui \
+	    -widgets \
+	    -no-dbus \
+	    -no-glib \
+	    -no-ssl \
+	    -no-openssl \
+	    -nomake examples \
+	    -feature-thread \
+	    -xplatform wasm-emscripten \
+	    -opensource \
+	    -confirm-license \
+	    -submodules qtgui,qtwidgets,qtsvg,qtbase \
+	    -- -B "${OUTPUT_DIR}/qt" || exit 5 ; \
+	  ninja --verbose -C "${OUTPUT_DIR}/qt" || exit 6 ; \
+	fi
+
+qt: ${QT_CORE_LIB}
+
+${LILYPLAYER_HTML}: ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg
+	"${SED}" -e 's/@APPNAME@/lilyplayer/g' ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html > "$@"
+	cp -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${OUTPUT_DIR}
+	cp -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
+
+loader: ${LILYPLAYER_HTML}
+
+${APP_OBJS_OUTPUT_DIR}/%.o: ${THIS_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+	${EMCC} \
+	  -pthread \
+	  -O2 \
+	  -std=c++17 \
+	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
+	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
+	  -I ${QT_HOME}/wasm_32/include \
+	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
+	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
+	  -I ${QT_HOME}/wasm_32/include/QtSvg \
+	  -I ${QT_HOME}/wasm_32/include/QtGui \
+	  -I ${QT_HOME}/wasm_32/include/QtCore \
+	  -c \
+	  -o "$@" \
+	  "$<"
+
+app_objs: ${APP_OBJS}
+
+
+${RESOURCE_CODE}: ${RC_FILE} | ${GENERATED_DIR}
+	cd ${THIS_DIR}/qdarkstyle && ${RCC} -o "$@" ${RC_FILE}
+
+${OUTPUT_DIR}/generated/%.o: ${OUTPUT_DIR}/generated/%.cc ${GENERATED_DIR}
+	${EMCXX} \
+	  -pthread \
+	  -O2 \
+	  -std=c++17 \
+	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
+	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
+	  -I ${QT_HOME}/wasm_32/include \
+	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
+	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
+	  -I ${QT_HOME}/wasm_32/include/QtSvg \
+	  -I ${QT_HOME}/wasm_32/include/QtGui \
+	  -I ${QT_HOME}/wasm_32/include/QtCore \
+	  -c \
+	  -o "$@" \
+	  "$<"
+
+resource: ${RESOURCE_OBJ}
+
+${JS_PLUGIN_IMPORT_SRC}: ${THIS_DIR}/lilyplayer.pro | ${GENERATED_DIR}
+	${WASM_QMAKE} -o ${OUTPUT_DIR}/generated "$<"
+
+${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC}
+	${EMCXX} \
+	  -pthread \
+	  -O2 \
+	  -std=c++17 \
+	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
+	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
+	  -I ${QT_HOME}/wasm_32/include \
+	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
+	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
+	  -I ${QT_HOME}/wasm_32/include/QtSvg \
+	  -I ${QT_HOME}/wasm_32/include/QtGui \
+	  -I ${QT_HOME}/wasm_32/include/QtCore \
+	  -c \
+	  -o "$@" \
+	  "${JS_PLUGIN_IMPORT_SRC}"
+
+js_plugin_import: ${JS_PLUGIN_IMPORT_OBJ}
+
+${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT_OBJ} ${LILYPLAYER_HTML}
+	${EMCC} \
+	  -pthread \
+	  -s ASYNCIFY=0 \
+	  -s ERROR_ON_UNDEFINED_SYMBOLS=1 \
+	  -s EXPORTED_RUNTIME_METHODS=[UTF16ToString,stringToUTF16] \
+	  --bind \
+	  -s FETCH=1 \
+	  -s MODULARIZE=1 \
+	  -s EXPORT_NAME=createQtAppInstance \
+	  -g0 \
+	  -s WASM=1 \
+	  -s FULL_ES2=1 \
+	  -s FULL_ES3=1 \
+	  -s USE_WEBGL2=0 \
+	  -s ASSERTIONS=0 \
+	  -s DEMANGLE_SUPPORT=0 \
+	  -s GL_DEBUG=0 \
+	  --profiling-funcs \
+	  -s ALLOW_MEMORY_GROWTH=0 \
+	  -s INITIAL_MEMORY=120MB \
+	  -s USE_PTHREADS=1 \
+	  -s PTHREAD_POOL_SIZE=4 \
+	  -o "$@" \
+	  ${APP_OBJS} \
+	  ${MOC_OBJ} \
+	  ${RESOURCE_OBJ} \
+	  ${FLUIDSYNTH_LIB} \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6BundledFreetype.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6BundledHarfbuzz.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6BundledLibjpeg.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6BundledLibpng.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6BundledPcre2.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Concurrent.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Gui.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Svg.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6SvgWidgets.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGL.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGLWidgets.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Widgets.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/generic/libqtuiotouchplugin.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/iconengines/libqsvgicon.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqgif.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqico.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqjpeg.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqsvg.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/libqwasm.a \
+	  ${JS_PLUGIN_IMPORT_OBJ} \
+	  ${OUTPUT_DIR}/qt/qtbase/src/plugins/platforms/wasm/CMakeFiles/QWasmIntegrationPlugin_resources_1.dir/.rcc/qrc_wasmfonts.cpp.o \
+	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
+	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
+	  --embed-file ${THIS_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2@/tmp/Yamaha-Grand-Lite-v2.0.sf2
+
+app: ${LILYPLAYER_JS}
+
+clean:
+	[ -d "${OUTPUT_DIR}" ] && rm -rf "${OUTPUT_DIR}"
+
+.PHONY: all clean fluidsynth qt app app_objs loader js_plugin_import

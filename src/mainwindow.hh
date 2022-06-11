@@ -16,6 +16,7 @@
 #include "utils.hh"
 #include "keyboard.hh"
 #include "bin_file_reader.hh"
+#include "sound_player.hh"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++" // Qt is not effective-C++ friendy
@@ -37,7 +38,6 @@ class MainWindow : public QMainWindow
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void open_file(const std::string& filename);
-    void set_output_port(const unsigned int i);
     void set_input_port(const unsigned int i);
 
   private:
@@ -52,9 +52,7 @@ class MainWindow : public QMainWindow
 
 #if USE_RTMIDI
     static void on_midi_input(double timestamp __attribute__((unused)), std::vector<unsigned char> *message, void* param);
-    static void on_midi_error(RtMidiError::Type type, const std::string &errorText, const char* const direction);
     static void on_midi_input_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)));
-    static void on_midi_output_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)));
 #endif
 
     void process_keyboard_event(const std::vector<key_down>& keys_down,
@@ -72,8 +70,6 @@ class MainWindow : public QMainWindow
     void song_event_loop();
     void replay();
     void look_for_signals_change();
-    void output_port_change();
-    void update_output_ports();
     void update_input_entries();
     void input_change();
     void handle_input_midi(const std::vector<unsigned char> bytes);
@@ -100,10 +96,10 @@ class MainWindow : public QMainWindow
     QTimer signal_checker_timer;
     bin_song_t song;
 #if USE_RTMIDI
-    RtMidiOut sound_player;
     RtMidiIn  sound_listener;
 #endif
-    std::string selected_output_port = "";
+    SoundPlayer sound_player_via_fluidsynth;
+
     std::string selected_input_port = "";
 
 

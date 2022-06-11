@@ -4,7 +4,7 @@ include Makefile.vars
 TARGET_DIR := ../bin
 TARGET := ${TARGET_DIR}/lilyplayer
 
-LIBS += -L../3rd-party/rtmidi/.libs -lrtmidi
+LIBS += -L../3rd-party/rtmidi/.libs -lrtmidi -lfluidsynth
 INCLUDES += -I../3rd-party/ -isystem ../3rd-party/
 
 LIBS += ${QT_LIBS}
@@ -66,6 +66,7 @@ SRC :=  main.cc  \
 	bin_file_reader.cc \
 	utils.cc \
 	measures_sequence_extractor.cc \
+	sound_player.cc \
 	${MOC_FILES} \
 	${RESOURCE_CODE}
 

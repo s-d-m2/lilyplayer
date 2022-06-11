@@ -14,7 +14,6 @@ static void usage(const char* const prog_name, std::ostream& out_stream = std::c
     "Options:\n"
     "  -h, --help			print this help\n"
     "  -l, --list			list the midi output ports available for use\n"
-    "  -o, --output-port <NUM>	the output midi port to use\n"
     "  -i, --input-port <NUM>	the input midi to use if no file is provided\n";
 }
 
@@ -23,8 +22,6 @@ struct options
     bool has_error;
     bool print_help;
     bool list_ports;
-    unsigned int output_port;
-    bool was_output_port_set;
     unsigned int input_port;
     bool was_input_port_set;
 
@@ -34,8 +31,6 @@ struct options
       : has_error (false)
       , print_help (false)
       , list_ports (false)
-      , output_port (0)
-      , was_output_port_set(false)
       , input_port (0)
       , was_input_port_set (false)
       , filename ("")
@@ -60,22 +55,6 @@ struct options get_opts(const int argc, const char * const * const argv)
     if ((arg == "-l") or (arg == "--list"))
     {
       res.list_ports = true;
-      continue;
-    }
-
-    if ((arg == "-o") or (arg == "--output-port"))
-    {
-      if (i == argc - 1)
-      {
-	res.has_error = true;
-	return res;
-      }
-      else
-      {
-	++i;
-	res.output_port = get_port(argv[i]);
-	res.was_output_port_set = true;
-      }
       continue;
     }
 
@@ -140,11 +119,6 @@ int main(const int argc, const char* const * const argv)
   a.setStyleSheet(stylesheet);
   MainWindow w;
   w.show();
-
-  if (opts.was_output_port_set)
-  {
-    w.set_output_port(opts.output_port);
-  }
 
   if (opts.was_input_port_set)
   {

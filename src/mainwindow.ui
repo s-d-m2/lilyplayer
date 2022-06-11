@@ -160,11 +160,6 @@
     <addaction name="actionOpen"/>
     <addaction name="actionClose"/>
    </widget>
-   <widget class="QMenu" name="menuOutput_port">
-    <property name="title">
-     <string>o&amp;utput port</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menuInput">
     <property name="title">
      <string>&amp;Input</string>
@@ -172,7 +167,6 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuInput"/>
-   <addaction name="menuOutput_port"/>
   </widget>
   <action name="actionClose">
    <property name="text">
