@@ -182,7 +182,7 @@ ${OUTPUT_DIR}/generated/%.o: ${OUTPUT_DIR}/generated/%.cc ${GENERATED_DIR}
 
 resource: ${RESOURCE_OBJ}
 
-${JS_PLUGIN_IMPORT_SRC}: ${THIS_DIR}/wasm/lilyplayer.pro | ${GENERATED_DIR}
+${JS_PLUGIN_IMPORT_SRC}: ${THIS_DIR}/lilyplayer.pro | ${GENERATED_DIR}
 	${WASM_QMAKE} -o ${OUTPUT_DIR}/generated "$<"
 
 ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC}
