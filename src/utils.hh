@@ -88,17 +88,10 @@ std::vector<midi_message_t>
 get_midi_from_keys_events(const std::vector<key_down>& keys_down,
 			  const std::vector<key_up>& keys_up);
 
-
-void list_midi_ports(std::ostream& out);
-unsigned int get_port(const std::string& s);
-
 std::string get_first_svg_line(const std::vector<uint8_t>& data);
 
 struct music_sheet_event;
 uint16_t find_last_measure(const std::vector<music_sheet_event>& events);
 uint16_t find_music_sheet_pos(const std::vector<music_sheet_event>& events, unsigned int event_pos);
-
-bool begins_by(const std::string& haystack, const char* const needle);
-std::vector<std::string> filter_out(const std::vector<std::string>& list, const char* const pattern_to_filter_out);
 
 #endif /* UTILS_HH_ */

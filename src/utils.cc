@@ -159,34 +159,6 @@ get_midi_from_keys_events(const std::vector<key_down>& keys_down,
   return res;
 }
 
-template <typename T>
-static
-void list_midi_ports(std::ostream& out, T& player, const char* direction)
-{
-  const auto nb_ports = player.getPortCount();
-  if (nb_ports == 0)
-  {
-    out << "Sorry: no " << direction << " midi port found\n";
-  }
-  else
-  {
-    if (nb_ports == 1)
-    {
-      out << "1 " << direction << " port found:\n";
-    }
-    else
-    {
-      out << nb_ports << " " << direction << " ports found:\n";
-    }
-
-    for (auto i = decltype(nb_ports){0}; i < nb_ports; ++i)
-    {
-      out << "  " << i << " -> " << player.getPortName(i) << "\n";
-    }
-  }
-
-}
-
 std::string get_first_svg_line(const std::vector<uint8_t>& data)
 {
   const char* const sheet_data = static_cast<const char*>(static_cast<const void*>(data.data()));
@@ -238,24 +210,4 @@ uint16_t find_music_sheet_pos(const std::vector<music_sheet_event>& events, unsi
   }
 
   return it->new_svg_file;
-}
-
-bool begins_by(const std::string& haystack, const char* const needle)
-{
-  return haystack.find(needle) == 0;
-}
-
-std::vector<std::string> filter_out(const std::vector<std::string>& list, const char* const pattern_to_filter_out)
-{
-  std::vector<std::string> res;
-
-  for (const auto& str : list)
-  {
-    if (not begins_by(str, pattern_to_filter_out))
-    {
-      res.push_back(str);
-    }
-  }
-
-  return res;
 }
