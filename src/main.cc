@@ -12,24 +12,18 @@ static void usage(const char* const prog_name, std::ostream& out_stream = std::c
   out_stream << "Usage: " << prog_name << " [Options] [file]\n"
     "\n"
     "Options:\n"
-    "  -h, --help		print this help\n"
-    "  -i, --input-port	use midi input port as music source (default when no file is given)\n";
+    "  -h, --help		print this help\n";
 }
 
 struct options
 {
     bool has_error;
     bool print_help;
-    bool list_ports;
-    bool use_midi_input;
-
     std::string filename;
 
     options()
       : has_error (false)
       , print_help (false)
-      , list_ports (false)
-      , use_midi_input (false)
       , filename ("")
     {
     }
@@ -49,19 +43,7 @@ struct options get_opts(const int argc, const char * const * const argv)
       continue;
     }
 
-    if ((arg == "-l") or (arg == "--list"))
-    {
-      res.list_ports = true;
-      continue;
-    }
-
-    if ((arg == "-i") or (arg == "--input-port"))
-    {
-      res.use_midi_input = true;
-      continue;
-    }
-
-    if ((res.filename != "") || res.use_midi_input)
+    if (res.filename != "")
     {
       res.has_error = true;
       return res;
@@ -95,22 +77,11 @@ int main(const int argc, const char* const * const argv)
     return 0;
   }
 
-  if (opts.list_ports)
-  {
-    list_midi_ports(std::cout);
-    return 0;
-  }
-
   int dummy { 0 };
   QApplication a(dummy, nullptr);
   a.setStyleSheet(stylesheet);
   MainWindow w;
   w.show();
-
-  if (opts.use_midi_input)
-  {
-    w.set_input_port();
-  }
 
   if (opts.filename != "")
   {

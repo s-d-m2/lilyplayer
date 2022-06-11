@@ -4,7 +4,7 @@ include Makefile.vars
 TARGET_DIR := ../bin
 TARGET := ${TARGET_DIR}/lilyplayer
 
-LIBS += -L../3rd-party/rtmidi/.libs -lrtmidi -lfluidsynth
+LIBS +=  -lfluidsynth
 INCLUDES += -I../3rd-party/ -isystem ../3rd-party/
 
 LIBS += ${QT_LIBS}
@@ -419,18 +419,12 @@ endif
 all:  ${TARGET}
 lilyplayer: ${TARGET}
 
-${TARGET}: ${OBJS} ../3rd-party/rtmidi/.libs/librtmidi.so
+${TARGET}: ${OBJS}
 	-mkdir -p ${TARGET_DIR}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o ${TARGET} ${OBJS} ${LIBS} -lstdc++
 
 ${RESOURCE_CODE}: ${QT_STYLE_FILES}
 	cd ../qdarkstyle && ${RCC} -o ../src/"$@" ${RC_FILE}
-
-../3rd-party/rtmidi/.libs/librtmidi.so:
-	cd ../3rd-party/rtmidi && \
-	./autogen.sh && \
-	./configure && \
-	make
 
 define specific_flags
    $(if $(findstring "resources.o",$(1)),-Wno-error,)\

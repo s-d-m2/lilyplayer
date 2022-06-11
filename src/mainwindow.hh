@@ -39,8 +39,6 @@ class MainWindow : public QMainWindow
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void open_file(const std::string& filename);
-    void set_input_port();
-    void set_input_port(unsigned i);
 
     void process_keyboard_event(const std::vector<key_down>& keys_down,
 				const std::vector<key_up>& keys_up,
@@ -50,17 +48,10 @@ class MainWindow : public QMainWindow
     void pause_music();
     void stop_song();
     void play_song(bin_song_t input_song);
-    void close_input_port();
     void clear_music_scheet();
     void process_music_sheet_event(const music_sheet_event& keys_event);
     void display_music_sheet(const unsigned music_sheet_pos);
     void keyPressEvent(QKeyEvent * event) override;
-
-#if USE_RTMIDI
-    static void on_midi_input(double timestamp __attribute__((unused)), std::vector<unsigned char> *message, void* param);
-    static void on_midi_input_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)));
-#endif
-
 
   signals:
     void midi_message_received(std::vector<unsigned char> bytes);
@@ -97,9 +88,6 @@ class MainWindow : public QMainWindow
     QGraphicsSvgItem* svg_rect;
     QTimer signal_checker_timer;
     bin_song_t song;
-#if USE_RTMIDI
-    RtMidiIn  sound_listener;
-#endif
     SoundPlayer sound_player;
     SoundListener sound_listener_via_fluidsynth;
 

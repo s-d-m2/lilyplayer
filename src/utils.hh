@@ -6,13 +6,6 @@
 #include <fstream>
 #include <string>
 
-#if defined(__wasm)
-  #define USE_RTMIDI 0
-#else
-  #define USE_RTMIDI 1
-  #include <rtmidi/RtMidi.h>
-#endif
-
 struct key_down
 {
     key_down(uint8_t _pitch, uint8_t _staff_num)
@@ -104,13 +97,6 @@ std::string get_first_svg_line(const std::vector<uint8_t>& data);
 struct music_sheet_event;
 uint16_t find_last_measure(const std::vector<music_sheet_event>& events);
 uint16_t find_music_sheet_pos(const std::vector<music_sheet_event>& events, unsigned int event_pos);
-
-
-#if USE_RTMIDI
-const char* rt_error_type_as_str(RtMidiError::Type value);
-
-std::vector<std::string> get_input_midi_ports_name(RtMidiIn& midi_listener);
-#endif
 
 bool begins_by(const std::string& haystack, const char* const needle);
 std::vector<std::string> filter_out(const std::vector<std::string>& list, const char* const pattern_to_filter_out);
