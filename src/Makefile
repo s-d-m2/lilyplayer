@@ -66,6 +66,7 @@ SRC :=  main.cc  \
 	bin_file_reader.cc \
 	utils.cc \
 	measures_sequence_extractor.cc \
+	sound_listener.cc \
 	sound_player.cc \
 	${MOC_FILES} \
 	${RESOURCE_CODE}

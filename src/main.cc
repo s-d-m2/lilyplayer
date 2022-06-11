@@ -61,7 +61,7 @@ struct options get_opts(const int argc, const char * const * const argv)
       continue;
     }
 
-    if (res.filename != "")
+    if ((res.filename != "") || res.use_midi_input)
     {
       res.has_error = true;
       return res;
@@ -107,9 +107,9 @@ int main(const int argc, const char* const * const argv)
   MainWindow w;
   w.show();
 
-  if (opts.was_input_port_set)
+  if (opts.use_midi_input)
   {
-    w.set_input_port(opts.input_port);
+    w.set_input_port();
   }
 
   if (opts.filename != "")

@@ -17,6 +17,7 @@
 #include "keyboard.hh"
 #include "bin_file_reader.hh"
 #include "sound_player.hh"
+#include "sound_listener.hh"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++" // Qt is not effective-C++ friendy
@@ -38,7 +39,12 @@ class MainWindow : public QMainWindow
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void open_file(const std::string& filename);
-    void set_input_port(const unsigned int i);
+    void set_input_port();
+    void set_input_port(unsigned i);
+
+    void process_keyboard_event(const std::vector<key_down>& keys_down,
+				const std::vector<key_up>& keys_up,
+				const std::vector<midi_message_t>& messages);
 
   private:
     void pause_music();
@@ -54,10 +60,6 @@ class MainWindow : public QMainWindow
     static void on_midi_input(double timestamp __attribute__((unused)), std::vector<unsigned char> *message, void* param);
     static void on_midi_input_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)));
 #endif
-
-    void process_keyboard_event(const std::vector<key_down>& keys_down,
-				const std::vector<key_up>& keys_up,
-				const std::vector<midi_message_t>& messages);
 
 
   signals:
@@ -98,7 +100,8 @@ class MainWindow : public QMainWindow
 #if USE_RTMIDI
     RtMidiIn  sound_listener;
 #endif
-    SoundPlayer sound_player_via_fluidsynth;
+    SoundPlayer sound_player;
+    SoundListener sound_listener_via_fluidsynth;
 
     std::string selected_input_port = "";
 

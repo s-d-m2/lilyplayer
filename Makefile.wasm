@@ -38,6 +38,7 @@ APP_SRC := ${THIS_DIR}/src/main.cc  \
 	   ${THIS_DIR}/src/utils.cc \
 	   ${THIS_DIR}/src/measures_sequence_extractor.cc \
 	   ${THIS_DIR}/src/sound_player.cc \
+	   ${THIS_DIR}/src/sound_listener.cc \
 	   ${THIS_DIR}/src/load_file_from_wasm.cc
 
 APP_OBJS := ${APP_SRC:${THIS_DIR}/src/%.cc=${APP_OBJS_OUTPUT_DIR}/%.o}
@@ -147,6 +148,7 @@ ${APP_OBJS_OUTPUT_DIR}/%.o: ${THIS_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLU
 	  -std=c++17 \
 	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
 	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
+	  -I ${OUTPUT_DIR}/generated \
 	  -I ${QT_HOME}/wasm_32/include \
 	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
 	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
@@ -170,6 +172,7 @@ ${OUTPUT_DIR}/generated/%.o: ${OUTPUT_DIR}/generated/%.cc ${GENERATED_DIR}
 	  -std=c++17 \
 	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
 	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
+	  -I ${OUTPUT_DIR}/generated \
 	  -I ${QT_HOME}/wasm_32/include \
 	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
 	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
@@ -192,6 +195,7 @@ ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC}
 	  -std=c++17 \
 	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
 	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
+	  -I ${OUTPUT_DIR}/generated \
 	  -I ${QT_HOME}/wasm_32/include \
 	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
 	  -I ${QT_HOME}/wasm_32/include/QtWidgets \

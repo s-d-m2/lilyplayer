@@ -82,12 +82,12 @@ void MainWindow::process_keyboard_event(const std::vector<key_down>& keys_down,
 {
   for (auto& key_down : keys_down)
   {
-    sound_player_via_fluidsynth.note_on(key_down.pitch);
+    sound_player.note_on(key_down.pitch);
   }
 
   for (auto& key_up : keys_up)
   {
-    sound_player_via_fluidsynth.note_off(key_up.pitch);
+    sound_player.note_off(key_up.pitch);
   }
 
   update_keyboard(keys_down, keys_up, this->keyboard);
@@ -232,7 +232,7 @@ void MainWindow::pause_music()
   this->is_in_pause = true;
 
 
-  sound_player_via_fluidsynth.all_notes_off();
+  sound_player.all_notes_off();
 }
 
 void MainWindow::stop_song()
@@ -448,7 +448,19 @@ void MainWindow::on_midi_input_error(RtMidiError::Type type, const std::string &
 }
 #endif
 
-void MainWindow::set_input_port(unsigned int i)
+void MainWindow::set_input_port()
+{
+#if USE_RTMIDI
+  const auto port_name = sound_listener.getPortName();
+  this->selected_input_port = port_name;
+  sound_listener.closePort();
+  sound_listener.setCallback(&MainWindow::on_midi_input, this);
+  sound_listener.openPort();
+  sound_listener.openVirtualPort();
+#endif
+}
+
+void MainWindow::set_input_port(unsigned i)
 {
 #if USE_RTMIDI
   const auto port_name = sound_listener.getPortName(i);
@@ -637,7 +649,8 @@ MainWindow::MainWindow(QWidget *parent) :
 #if USE_RTMIDI
   sound_listener(RtMidi::LINUX_ALSA, LILYPLAYER_VIRTUAL_MIDI_INPUT),
 #endif
-  sound_player_via_fluidsynth(),
+  sound_player(),
+  sound_listener_via_fluidsynth(*this),
   is_in_pause(true)
 {
   ui->setupUi(this);
