@@ -187,24 +187,19 @@ void list_midi_ports(std::ostream& out, T& player, const char* direction)
 
 }
 
-void list_midi_ports(std::ostream& /* out */)
+void list_midi_ports(std::ostream& out)
 {
 #if USE_RTMIDI
-  RtMidiOut out_player;
-  list_midi_ports(out, out_player, "output");
-
-  out << "\n";
-
   RtMidiIn in_player;
   list_midi_ports(out, in_player, "input");
 #endif
 }
 
-static unsigned int get_nb_output_ports()
+static unsigned int get_nr_input_ports()
 {
 #if USE_RTMIDI
-  RtMidiOut player;
-  return player.getPortCount();
+  RtMidiIn listener;
+  return listener.getPortCount();
 #else
   return 0;
 #endif
@@ -212,12 +207,12 @@ static unsigned int get_nb_output_ports()
 
 unsigned int get_port(const std::string& s)
 {
-  const auto nb_outputs = get_nb_output_ports();
+  const auto nr_input_ports = get_nr_input_ports();
 
   try
   {
     const auto res = std::stoi(s);
-    if ((res < 0) or (static_cast<unsigned int>(res) >= nb_outputs))
+    if ((res < 0) or (static_cast<unsigned int>(res) >= nr_input_ports))
     {
       std::cerr << "Warning: invalid port\n";
       return 0;
@@ -228,10 +223,10 @@ unsigned int get_port(const std::string& s)
   {
 #if USE_RTMIDI
     // argument is not a number, let's see if it matches the name of one of the output
-    for (auto i = decltype(nb_outputs){0}; i < nb_outputs; ++i)
+    for (auto i = decltype(nr_input_ports){0}; i < nr_input_ports; ++i)
     {
-      RtMidiOut player;
-      if (s == player.getPortName(i))
+      RtMidiIn listener;
+      if (s == listener.getPortName(i))
       {
 	return i;
       }

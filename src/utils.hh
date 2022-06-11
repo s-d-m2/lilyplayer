@@ -6,13 +6,12 @@
 #include <fstream>
 #include <string>
 
-// #if defined(__wasm)
-//   #define USE_RTMIDI 0
-// #else
-//   #define USE_RTMIDI 1
-//   #include <rtmidi/RtMidi.h>
-// #endif
-#define USE_RTMIDI 0
+#if defined(__wasm)
+  #define USE_RTMIDI 0
+#else
+  #define USE_RTMIDI 1
+  #include <rtmidi/RtMidi.h>
+#endif
 
 struct key_down
 {

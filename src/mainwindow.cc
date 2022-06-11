@@ -27,7 +27,6 @@ extern volatile sig_atomic_t new_signal_received;
 
 namespace {
   const char * const LILYPLAYER_VIRTUAL_MIDI_INPUT = "Lilyplayer listener";
-  const char * const LILYPLAYER_VIRTUAL_MIDI_OUTPUT = "Lilyplayer sound player";
 }
 
 void MainWindow::look_for_signals_change()
@@ -93,16 +92,6 @@ void MainWindow::process_keyboard_event(const std::vector<key_down>& keys_down,
 
   update_keyboard(keys_down, keys_up, this->keyboard);
   this->update();
-
-#if USE_RTMIDI
-  if (sound_player.isPortOpen())
-  {
-    for (auto& message : messages)
-    {
-      sound_player.sendMessage(&message);
-    }
-  }
-#endif
 }
 
 void MainWindow::display_music_sheet(const unsigned music_sheet_pos)
@@ -244,26 +233,6 @@ void MainWindow::pause_music()
 
 
   sound_player_via_fluidsynth.all_notes_off();
-
-#if USE_RTMIDI
-  if (sound_player.isPortOpen())
-  {
-    // todo, compute the midi_messages vector at compile time
-    std::vector<key_up> keys;
-    constexpr const uint8_t nb_keys = static_cast<uint8_t>(note_kind::do_8) - static_cast<uint8_t>(note_kind::la_0) + 1;
-    keys.reserve(nb_keys);
-    for (auto key = static_cast<uint8_t>(note_kind::la_0); key <= static_cast<uint8_t>(note_kind::do_8); ++key)
-    {
-      keys.push_back(key_up{key});
-    }
-
-    const auto midi_messages = get_midi_from_keys_events(std::vector<key_down>(), keys);
-    for (auto& message : midi_messages)
-    {
-      sound_player.sendMessage(&message);
-    }
-  }
-#endif
 }
 
 void MainWindow::stop_song()
@@ -446,108 +415,6 @@ void MainWindow::sub_sequence_click()
 
 }
 
-void MainWindow::set_output_port(const unsigned int /* i */)
-{
-#if USE_RTMIDI
-  try
-  {
-    sound_player.closePort();
-    sound_player.openPort(i);
-    const auto port_name = sound_player.getPortName(i);
-    sound_player.openVirtualPort();
-    this->selected_output_port = port_name;
-    this->update_output_ports();
-  }
-  catch (std::exception& e)
-  {
-    const auto err_msg = e.what();
-    QMessageBox::critical(this, tr("Failed to change the output port."),
-			  err_msg,
-			  QMessageBox::Ok,
-			  QMessageBox::Ok);
-
-    // failed to change port, clear the selected item. There is no need to set the button
-    // to unchecked as the menu is automatically closed after selecting an item, and the
-    // entries are regenerated when the menu is opened again.
-    this->selected_output_port.clear();
-
-    // make sure to close all output ports
-    this->sound_player.closePort();
-  }
-#endif
-}
-
-void MainWindow::output_port_change()
-{
-#if USE_RTMIDI
-  // find out which output port is now checked.
-  auto menu_output_port = ui->menuOutput_port;
-  auto button_list = menu_output_port->findChildren<QAction*>(QString(), Qt::FindDirectChildrenOnly);
-  for (auto& button : button_list)
-  {
-    if (button->isChecked())
-    {
-      this->selected_output_port = button->text().toStdString();
-      const auto nb_ports = sound_player.getPortCount();
-      for (unsigned int i = 0; i < nb_ports; ++i)
-      {
-	const auto port_name = sound_player.getPortName(i);
-	if (port_name == selected_output_port)
-	{
-	  sound_player.closePort();
-	  sound_player.openPort(i);
-	  sound_player.openVirtualPort();
-	}
-      }
-    }
-  }
-#endif
-}
-
-void MainWindow::update_output_ports()
-{
-#if USE_RTMIDI
-  const auto nb_ports = sound_player.getPortCount();
-  if (nb_ports == 0)
-  {
-    std::cerr << "Sorry: can't populate menu, no output midi port found\n";
-    return;
-  }
-
-  // remove all the children!
-  auto menu_output_port = ui->menuOutput_port;
-  menu_output_port->clear();
-
-  // find the action group.
-  auto action_group = menu_output_port->findChild<QActionGroup*>("",
-								 Qt::FindDirectChildrenOnly);
-  if (action_group == nullptr)
-  {
-    action_group = new QActionGroup( menu_output_port );
-  }
-
-  auto port_names = get_output_midi_ports_name(sound_player);
-  port_names = filter_out(port_names, LILYPLAYER_VIRTUAL_MIDI_INPUT);
-  if (selected_input_port != "")
-  {
-    port_names = filter_out(port_names, selected_input_port.c_str());
-  }
-
-
-  for (const auto& port_name : port_names)
-  {
-    const auto label = QString::fromStdString( port_name );
-    auto button = menu_output_port->addAction(label);
-    button->setCheckable(true);
-    const auto select_this_port = ( port_name == selected_output_port );
-    button->setChecked( select_this_port );
-
-    button->setActionGroup( action_group );
-    connect(button, SIGNAL(triggered()), this, SLOT(output_port_change()));
-  }
-#endif
-}
-
 void MainWindow::handle_input_midi(const std::vector<unsigned char> message)
 {
   const auto key_events = midi_to_key_events(message);
@@ -573,26 +440,15 @@ void MainWindow::on_midi_input(double timestamp __attribute__((unused)), std::ve
   message->clear();
 }
 
-void MainWindow::on_midi_error(RtMidiError::Type type, const std::string &errorText, const char* const direction)
-{
-  std::cerr << "Error occured for midi " << direction << ":\n"
-	    << "  RtMidi considers this as a " << rt_error_type_as_str(type) << "\n"
-	    << "  it also says: " << errorText << "\n"
-	    << std::endl;
-}
-
 void MainWindow::on_midi_input_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)))
 {
-  on_midi_error(type, errorText, "input");
-}
-
-void MainWindow::on_midi_output_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)))
-{
-  on_midi_error(type, errorText, "output");
+  std::cerr << "Error occured for midi input:\n"
+    "  RtMidi considers this as a " << rt_error_type_as_str(type) << "\n"
+    "  it also says: " << errorText << std::endl;
 }
 #endif
 
-void MainWindow::set_input_port(unsigned int /* i */)
+void MainWindow::set_input_port(unsigned int i)
 {
 #if USE_RTMIDI
   const auto port_name = sound_listener.getPortName(i);
@@ -745,12 +601,6 @@ void MainWindow::update_input_entries()
   {
     // Add one entry per input midi port
     auto port_names = get_input_midi_ports_name(sound_listener);
-    port_names = filter_out(port_names, LILYPLAYER_VIRTUAL_MIDI_OUTPUT);
-    if (selected_output_port != "")
-    {
-      port_names = filter_out(port_names, selected_output_port.c_str());
-    }
-
     for (const auto& port_name : port_names)
     {
       const auto label = QString::fromStdString( port_name );
@@ -785,7 +635,6 @@ MainWindow::MainWindow(QWidget *parent) :
   signal_checker_timer(),
   song(),
 #if USE_RTMIDI
-  sound_player(RtMidi::LINUX_ALSA, LILYPLAYER_VIRTUAL_MIDI_OUTPUT),
   sound_listener(RtMidi::LINUX_ALSA, LILYPLAYER_VIRTUAL_MIDI_INPUT),
 #endif
   sound_player_via_fluidsynth(),
@@ -802,45 +651,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 #if USE_RTMIDI
   sound_listener.setErrorCallback(&MainWindow::on_midi_input_error, nullptr);
-  sound_player.setErrorCallback(&MainWindow::on_midi_output_error, nullptr);
-
   sound_listener.setCallback(&MainWindow::on_midi_input, this);
-
-  sound_player.openVirtualPort();
   sound_listener.openVirtualPort();
-
-  {
-    // automatically open an output midi port if possible
-    const auto nb_ports = sound_player.getPortCount();
-    if (nb_ports == 0)
-    {
-      std::cerr << "Sorry: no output midi port found\n";
-    }
-    else
-    {
-      // automatically open an output midi port.
-      // port number 0 is usually "Midi Through 14:0" which seems to be a dummy.
-      // avoid choosing the listening port as otherwise it creates the "inifinite movement" issue
-      unsigned int port_to_use = (nb_ports == 1) ? 0 : 1;
-      while ((port_to_use < nb_ports) and begins_by(sound_player.getPortName(port_to_use), LILYPLAYER_VIRTUAL_MIDI_INPUT))
-      {
-	++port_to_use;
-      }
-      if (port_to_use < nb_ports)
-      {
-	sound_player.openPort( port_to_use );
-	this->selected_output_port = sound_player.getPortName( port_to_use );
-      }
-    }
-  }
 #endif
-  {
-    // setting up the signal on_output_ports_menu_clicked->update_outputs_ports.
-    // update_outputs_ports is the function that fills up the menu entries with all the ports
-    // output ports available.
-    auto menu_output_port = ui->menuOutput_port;
-    connect(menu_output_port, SIGNAL(aboutToShow()), this, SLOT(update_output_ports()));
-  }
 
   {
     // setting up the signal on_input_menu_clicked->update_input_entries. Update_input_entries fills up
@@ -880,6 +693,5 @@ MainWindow::~MainWindow()
   delete ui;
 #if USE_RTMIDI
   sound_listener.closePort();
-  sound_player.closePort();
 #endif
 }
