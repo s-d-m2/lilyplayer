@@ -165,7 +165,7 @@ app_objs: ${APP_OBJS}
 ${RESOURCE_CODE}: ${RC_FILE} | ${GENERATED_DIR}
 	cd ${THIS_DIR}/qdarkstyle && ${RCC} -o "$@" ${RC_FILE}
 
-${OUTPUT_DIR}/generated/%.o: ${OUTPUT_DIR}/generated/%.cc ${GENERATED_DIR} ${FLUIDSYNTH_LIB}
+${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc ${FLUIDSYNTH_LIB}
 	${EMCXX} \
 	  -pthread \
 	  -O2 \
