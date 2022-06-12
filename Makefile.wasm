@@ -165,7 +165,7 @@ app_objs: ${APP_OBJS}
 ${RESOURCE_CODE}: ${RC_FILE} | ${GENERATED_DIR}
 	cd ${THIS_DIR}/qdarkstyle && ${RCC} -o "$@" ${RC_FILE}
 
-${OUTPUT_DIR}/generated/%.o: ${OUTPUT_DIR}/generated/%.cc ${GENERATED_DIR}
+${OUTPUT_DIR}/generated/%.o: ${OUTPUT_DIR}/generated/%.cc ${GENERATED_DIR} ${FLUIDSYNTH_LIB}
 	${EMCXX} \
 	  -pthread \
 	  -O2 \
@@ -188,7 +188,7 @@ resource: ${RESOURCE_OBJ}
 ${JS_PLUGIN_IMPORT_SRC}: ${THIS_DIR}/lilyplayer.pro | ${GENERATED_DIR}
 	${WASM_QMAKE} -o ${OUTPUT_DIR}/generated "$<"
 
-${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC}
+${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC} ${FLUIDSYNTH_LIB}
 	${EMCXX} \
 	  -pthread \
 	  -O2 \
