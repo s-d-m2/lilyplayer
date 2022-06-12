@@ -82,12 +82,12 @@ void MainWindow::process_keyboard_event(const std::vector<key_down>& keys_down,
 {
   for (auto& key_down : keys_down)
   {
-    sound_player_via_fluidsynth.note_on(key_down.pitch);
+    sound_player.note_on(key_down.pitch);
   }
 
   for (auto& key_up : keys_up)
   {
-    sound_player_via_fluidsynth.note_off(key_up.pitch);
+    sound_player.note_off(key_up.pitch);
   }
 
   update_keyboard(keys_down, keys_up, this->keyboard);
@@ -232,7 +232,7 @@ void MainWindow::pause_music()
   this->is_in_pause = true;
 
 
-  sound_player_via_fluidsynth.all_notes_off();
+  sound_player.all_notes_off();
 }
 
 void MainWindow::stop_song()
@@ -290,9 +290,6 @@ void MainWindow::play_song(bin_song_t input_song)
     }
 
     this->song_pos = this->start_pos;
-#if USE_RTMIDI
-    sound_listener.closePort();
-#endif
     this->selected_input_port.clear();
 
     const auto nb_svg = song.svg_files.size();
@@ -422,52 +419,6 @@ void MainWindow::handle_input_midi(const std::vector<unsigned char> message)
   this->process_keyboard_event(key_events.keys_down, key_events.keys_up, messages);
 }
 
-#if USE_RTMIDI
-void MainWindow::on_midi_input(double timestamp __attribute__((unused)), std::vector<unsigned char> *message, void* param)
-{
-  if (message == nullptr)
-  {
-    throw std::invalid_argument("Error, invalid input message");
-  }
-
-  if (param == nullptr)
-  {
-    throw std::invalid_argument("Error, invalid argument for input listener");
-  }
-
-  auto window = static_cast<class MainWindow*>(param);
-  window->handle_input_midi(*message);
-  message->clear();
-}
-
-void MainWindow::on_midi_input_error(RtMidiError::Type type, const std::string &errorText, void* param __attribute__((unused)))
-{
-  std::cerr << "Error occured for midi input:\n"
-    "  RtMidi considers this as a " << rt_error_type_as_str(type) << "\n"
-    "  it also says: " << errorText << std::endl;
-}
-#endif
-
-void MainWindow::set_input_port(unsigned int i)
-{
-#if USE_RTMIDI
-  const auto port_name = sound_listener.getPortName(i);
-  this->selected_input_port = port_name;
-  sound_listener.closePort();
-  sound_listener.setCallback(&MainWindow::on_midi_input, this);
-  sound_listener.openPort(i);
-  sound_listener.openVirtualPort();
-#endif
-}
-
-void MainWindow::close_input_port()
-{
-#if USE_RTMIDI
-  sound_listener.cancelCallback();
-  sound_listener.closePort();
-#endif
-}
-
 void MainWindow::input_change()
 {
   // find out which menu item has been clicked.
@@ -497,80 +448,6 @@ void MainWindow::input_change()
 
 
   this->clear_music_scheet();
-#if USE_RTMIDI
-  const auto clicked_button = *std::find_if(button_list.cbegin(), button_list.cend(), [] (const auto& button) {
-											return button->isChecked();
-											 });
-  this->selected_input_port = clicked_button->text().toStdString();
-
-  const auto nb_ports_with_selected_input_name = [&] () {
-						   const auto nb_ports = sound_listener.getPortCount();
-						   unsigned int res = 0;
-						   for (unsigned int i = 0; i < nb_ports; ++i)
-						   {
-						     const auto port_name = sound_listener.getPortName(i);
-						     if (port_name == selected_input_port)
-						     {
-						       ++res;
-						     }
-						   }
-						   return res;
-						 }();
-
-  if (nb_ports_with_selected_input_name >= 2)
-  {
-    QMessageBox::critical(this, tr("Broken invariant detected."),
-			  "More than one input button have the same label.",
-			  QMessageBox::Ok,
-			  QMessageBox::Ok);
-    return;
-  }
-
-  this->close_input_port();
-
-  if (nb_ports_with_selected_input_name <= 0)
-  {
-    // selected input was not a midi port (could be a file)
-    // no need to set the midi input port then
-    return;
-  }
-
-  const auto num_port_with_selected_input_name = [&] () {
-						   const auto nb_ports = sound_listener.getPortCount();
-						   for (unsigned int i = 0; i < nb_ports; ++i)
-						   {
-						     const auto port_name = sound_listener.getPortName(i);
-						     if (port_name == selected_input_port)
-						     {
-						       return i;
-						     }
-						   }
-						   throw std::runtime_error(std::string{"no midi input port with name ["} + selected_input_port + "] found");
-						 }();
-
-
-  try
-  {
-    this->set_input_port(num_port_with_selected_input_name);
-  }
-  catch (std::exception& e)
-  {
-    const auto err_msg = e.what();
-    QMessageBox::critical(this, tr("Failed to change the input."),
-			  err_msg,
-			  QMessageBox::Ok,
-			  QMessageBox::Ok);
-
-    // failed to change port, clear the selected item. There is no need to set the button
-    // to unchecked as the menu is automatically closed after selecting an item, and the
-    // entries are regenerated when the menu is opened again.
-    this->selected_input_port.clear();
-
-    // make sure to close all inputs ports
-    sound_listener.cancelCallback();
-    sound_listener.closePort();
-  }
-#endif
 }
 
 void MainWindow::update_input_entries()
@@ -596,24 +473,6 @@ void MainWindow::update_input_entries()
     button->setActionGroup(action_group);
     connect(button, SIGNAL(triggered()), this, SLOT(open_file()));
   }
-
-#if USE_RTMIDI
-  {
-    // Add one entry per input midi port
-    auto port_names = get_input_midi_ports_name(sound_listener);
-    for (const auto& port_name : port_names)
-    {
-      const auto label = QString::fromStdString( port_name );
-      auto button = menu_input->addAction(label);
-      button->setCheckable(true);
-      const auto select_this_port = ( port_name == selected_input_port );
-      button->setChecked( select_this_port );
-
-      button->setActionGroup( action_group );
-      connect(button, SIGNAL(triggered()), this, SLOT(input_change()));
-    }
-  }
-#endif
 }
 
 
@@ -634,10 +493,8 @@ MainWindow::MainWindow(QWidget *parent) :
   svg_rect(nullptr),
   signal_checker_timer(),
   song(),
-#if USE_RTMIDI
-  sound_listener(RtMidi::LINUX_ALSA, LILYPLAYER_VIRTUAL_MIDI_INPUT),
-#endif
-  sound_player_via_fluidsynth(),
+  sound_player(),
+  sound_listener_via_fluidsynth(*this),
   is_in_pause(true)
 {
   ui->setupUi(this);
@@ -648,12 +505,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   connect(&signal_checker_timer, SIGNAL(timeout()), this, SLOT(look_for_signals_change()));
   signal_checker_timer.start(100 /* ms */);
-
-#if USE_RTMIDI
-  sound_listener.setErrorCallback(&MainWindow::on_midi_input_error, nullptr);
-  sound_listener.setCallback(&MainWindow::on_midi_input, this);
-  sound_listener.openVirtualPort();
-#endif
 
   {
     // setting up the signal on_input_menu_clicked->update_input_entries. Update_input_entries fills up
@@ -691,7 +542,4 @@ MainWindow::~MainWindow()
 {
   clear_music_scheet();
   delete ui;
-#if USE_RTMIDI
-  sound_listener.closePort();
-#endif
 }

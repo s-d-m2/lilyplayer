@@ -6,7 +6,6 @@ wasm:
 
 clean:
 	${MAKE} -C ./src "$@"
-	${MAKE} -C ./3rd-party/rtmidi/ "$@"
 
 install:
 	./make-install.sh ${DESTDIR}
