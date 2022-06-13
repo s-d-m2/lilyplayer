@@ -427,8 +427,8 @@ ${RESOURCE_CODE}: ${QT_STYLE_FILES}
 	cd ../qdarkstyle && ${RCC} -o ../src/"$@" ${RC_FILE}
 
 define specific_flags
-   $(if $(findstring "resources.o",$(1)),-Wno-error,)\
-   $(if $(findstring "moc_mainwindow.o",$(1)),-Wno-error,)
+   $(if $(findstring resources.o,$(1)),-Wno-error,)\
+   $(if $(findstring moc_mainwindow.o,$(1)),-Wno-error,)
 endef
 
 %.o: %.cc ${FORMS_HEADERS}

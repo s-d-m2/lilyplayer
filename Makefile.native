@@ -1,0 +1,573 @@
+QT_HOME := /home/sam/code/Qt/6.3.0
+
+UIC := ${QT_HOME}/gcc_64/libexec/uic
+MOC := ${QT_HOME}/gcc_64/libexec/moc
+RCC := ${QT_HOME}/gcc_64/libexec/rcc
+
+
+PROJECT_ROOT_DIR := $(shell realpath .)
+OUTPUT_DIR := ${PROJECT_ROOT_DIR}/build_dir_for_native_output
+TARGET := ${OUTPUT_DIR}/lilyplayer
+
+APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
+
+GENERATED_DIR := ${OUTPUT_DIR}/generated
+
+FLUIDSYNTH_LIB := ${OUTPUT_DIR}/libfluidsynth.a
+QT_CORE_LIB := ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a
+
+SED := sed
+MKDIR := mkdir
+
+QT_DEFINES := -DQT_NO_DEBUG -D_REENTRANT -DQT_WIDGETS_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_SVG_LIB
+QT_INCLUDES := -isystem ${OUTPUT_DIR}/qt/qtbase/include\
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtSvgWidgets \
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtWidgets \
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtSvg \
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtGui \
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtCore
+
+FLUIDSYNTH_INCLUDES := -isystem ${OUTPUT_DIR}/fluidsynth/include \
+	               -isystem ${PROJECT_ROOT_DIR}/3rd-party/fluidsynth/include
+
+INCLUDES := ${QT_DEFINES} ${QT_INCLUDES} \
+	    ${FLUIDSYNTH_INCLUDES} \
+	    -I ${GENERATED_DIR}
+
+LIBS := -lGL \
+	-lpthread \
+	$(shell pkg-config --libs libinstpatch-1.0 alsa dbus-1 jack sdl2 readline libpcre2-16 libpng libzstd harfbuzz) \
+	-lgomp -lpulse -lpulse-simple
+
+APP_SRC := ${PROJECT_ROOT_DIR}/src/main.cc  \
+	   ${PROJECT_ROOT_DIR}/src/mainwindow.cc \
+	   ${PROJECT_ROOT_DIR}/src/keyboard.cc \
+	   ${PROJECT_ROOT_DIR}/src/signals_handler.cc \
+	   ${PROJECT_ROOT_DIR}/src/bin_file_reader.cc \
+	   ${PROJECT_ROOT_DIR}/src/utils.cc \
+	   ${PROJECT_ROOT_DIR}/src/measures_sequence_extractor.cc \
+	   ${PROJECT_ROOT_DIR}/src/sound_player.cc \
+	   ${PROJECT_ROOT_DIR}/src/sound_listener.cc
+
+APP_OBJS := ${APP_SRC:${PROJECT_ROOT_DIR}/src/%.cc=${APP_OBJS_OUTPUT_DIR}/%.o}
+
+RC_FILE := ${PROJECT_ROOT_DIR}/qdarkstyle/style.qrc
+QT_STYLE_FILES := ${PROJECT_ROOT_DIR}/qdarkstyle/rc/Vsepartoolbar.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/close-pressed.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/Hmovetoolbar.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/up_arrow.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/left_arrow_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/close-hover.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_unchecked.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_unchecked_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_checked.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_checked_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/Hsepartoolbar.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/sizegrip.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/down_arrow.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/stylesheet-branch-more.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_unchecked.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/branch_closed-on.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_unchecked_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/branch_open.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/left_arrow.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/stylesheet-branch-end.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/undock.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/right_arrow.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_indeterminate.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_checked_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/stylesheet-vline.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_checked_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/branch_closed.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/right_arrow_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/down_arrow_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/branch_open-on.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_unchecked_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/Vmovetoolbar.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/transparent.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/close.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_checked_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_checked.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/up_arrow_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_indeterminate_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_unchecked_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/style.qss \
+		${RC_FILE}
+
+RESOURCE_CODE := ${OUTPUT_DIR}/generated/resources.cc
+RESOURCE_OBJ :=  ${OUTPUT_DIR}/generated/resources.o
+
+UI_MAINWINDOW_HH := ${GENERATED_DIR}/ui_mainwindow.hh
+MOC_FILE := ${GENERATED_DIR}/moc_mainwindow.cc
+MOC_OBJ := ${GENERATED_DIR}/moc_mainwindow.o
+
+COVERAGE_HTML_DIR := ${GENERATED_DIR}/coverage_output
+LCOV=lcov
+LCOV_FLAGS= --rc lcov_branch_coverage=1 \
+	    --rc genhtml_branch_coverage=1 \
+	    --rc geninfo_gcov_all_blocks=1 \
+	    --directory .
+
+GENHTML = genhtml
+GENHTML_FLAGS = --branch-coverage
+
+TOOLCHAIN=gcc
+
+CLANG_CC  ?= clang
+CLANG_CXX ?= clang++
+SCAN_BUILD ?= scan-build
+
+ifeq ($(TOOLCHAIN),clang)
+  CXX := ${CLANG_CXX}
+  CXX_WARN_FLAGS ?= -Weverything \
+		    -Wno-c++98-compat \
+		    -Wno-c++98-compat-pedantic \
+		    -Wno-c99-extensions \
+		    -Wno-padded # remove padding warning
+  CC := ${CLANG_CC}
+  CC_WARN_FLAGS ?= -Weverything
+
+
+  SANITIZERS = \
+	-fsanitize=address \
+	-fsanitize=undefined \
+	-fsanitize=integer
+
+# -fsanitize=memory \
+# -fsanitize=dataflow \
+# -fsanitize=cfi \
+# -fsanitize=safe-stack
+
+# -fsanitize=thread #is incompatible with sanitize address
+# -fsanitize=leak # leak sanitizer can't be used if either address or thread sanitizer is used
+
+  HARDENING_FLAGS = \
+	-fstack-protector-all \
+	--param ssp-buffer-size=4 \
+	-D_FORTIFY_SOURCE=2 \
+	-fPIC
+
+  LDFLAGS = \
+	-pie \
+	-z noexecstack \
+	-z now\
+	-z relro \
+	-z nodlopen \
+	-z nodump
+
+else
+
+  CC_WARN_FLAGS_FOR_GCC_4.9 := \
+	-Werror \
+	-Wpedantic \
+	-Wall \
+	-Wextra \
+	-Wdouble-promotion \
+	-Wformat=2 \
+	-Winit-self \
+	-Wuninitialized \
+	-Wmissing-include-dirs \
+	-Wswitch-default \
+	-Wswitch-enum \
+	-Wunused \
+	-Wunused-parameter \
+	-Wunknown-pragmas \
+	-Wstrict-aliasing=3 \
+	-Wstrict-overflow=5 \
+	-Wsuggest-attribute=pure \
+	-Wsuggest-attribute=const \
+	-Wsuggest-attribute=noreturn \
+	-Wsuggest-attribute=format \
+	-Wmissing-format-attribute \
+	-Wtrampolines \
+	-Wfloat-equal \
+	-Wtraditional-conversion \
+	-Wundef \
+	-Wshadow \
+	-Wunsafe-loop-optimizations \
+	-Wpointer-arith \
+	-Wtype-limits \
+	-Wbad-function-cast \
+	-Wc++-compat \
+	-Wcast-qual \
+	-Wcast-align \
+	-Wwrite-strings \
+	-Wconversion \
+	-Wdate-time \
+	-Wjump-misses-init \
+	-Wconversion \
+	-Wlogical-op \
+	-Waggregate-return \
+	-Wstrict-prototypes \
+	-Wold-style-definition \
+	-Wmissing-declarations \
+	-Wpacked \
+	-Wpadded \
+	-Wredundant-decls \
+	-Wnested-externs \
+	-Winline \
+	-Winvalid-pch \
+	-Wvariadic-macros \
+	-Wvarargs \
+	-Wvla \
+	-Wdisabled-optimization \
+	-Wunsuffixed-float-constants \
+	-Wno-c++-compat
+
+  CC_WARN_FLAGS_FOR_GCC_5 := \
+	${CC_WARN_FLAGS_FOR_GCC_4.9} \
+# All the new warning flags for gcc 5 are enabled by default or -Wall, hence nothing to add here
+
+#-fcheck-pointer-bounds
+# Pointer Bounds Checker, a bounds violation detector, has been added and can be enabled via
+# -fcheck-pointer-bounds. Memory accesses are instrumented with run-time checks of used pointers
+# against their bounds to detect pointer bounds violations (overflows). The Pointer Bounds Checker
+# is available on x86/x86-64 GNU/Linux targets with a new ISA extension Intel MPX support. See the
+# Pointer Bounds Checker Wiki page for more details.
+
+  CC_WARN_FLAGS_FOR_GCC_6 := \
+	${CC_WARN_FLAGS_FOR_GCC_5} \
+	-Wshift-overflow=2 \
+	-fdelete-null-pointer-checks \
+	-Wnull-dereference \
+	-Wduplicated-cond
+
+  CC_WARN_FLAGS_FOR_GCC_7 := \
+	${CC_WARN_FLAGS_FOR_GCC_6} \
+	-Wduplicated-branches \
+	-Wrestrict \
+	-Walloc-zero \
+	-Wformat-overflow=2 \
+	-Wformat-signedness \
+	-Wformat-truncation=2
+
+  CC_WARN_FLAGS_FOR_GCC_8 := \
+	${CC_WARN_FLAGS_FOR_GCC_7} \
+	-Wmultistatement-macros \
+	-Wcast-align=strict
+
+# for g++ 4.9
+  CXX_WARN_FLAGS_FOR_GCC_4.9 ?= \
+	-Werror \
+	-Wno-pedantic \
+	-Wpointer-arith \
+	-Wall \
+	-Wextra \
+	-Wformat=2 \
+	-Wnonnull \
+	-Winit-self \
+	-Wmissing-include-dirs \
+	-Wswitch-default \
+	-Wswitch-enum \
+	-Wuninitialized \
+	-fstrict-aliasing \
+	-Wstrict-overflow=5 \
+	-Warray-bounds \
+	-Wfloat-equal \
+	-Wundef \
+	-Wshadow \
+	-Wcast-qual \
+	-Wcast-align \
+	-Wwrite-strings \
+	-Wconversion \
+	-Wsign-conversion \
+	-Wmissing-declarations \
+	-Wpacked \
+	-Wredundant-decls \
+	-Winvalid-pch \
+	-Wlong-long \
+	-Wvarargs \
+	-Wvla \
+	-funsafe-loop-optimizations \
+	-Wunsafe-loop-optimizations \
+	-Wdouble-promotion \
+	-Wsuggest-attribute=pure \
+	-Wsuggest-attribute=const \
+	-Wsuggest-attribute=noreturn \
+	-Wsuggest-attribute=format \
+	-Wtrampolines \
+	-Wzero-as-null-pointer-constant \
+	-Wuseless-cast \
+	-Wlogical-op \
+	-Wvector-operation-performance \
+	-Wabi=11 \
+	-Wctor-dtor-privacy \
+	-Wnoexcept \
+	-Weffc++ \
+	-Wstrict-null-sentinel \
+	-Wold-style-cast \
+	-Woverloaded-virtual \
+	-Wsign-promo
+
+#	unfortunately g++ reports padding warnings with lambda's variable capturing
+#	-Wpadded \
+
+# for G++ 5.1/5.2
+  CXX_WARN_FLAGS_FOR_GCC_5 := \
+	${CXX_WARN_FLAGS_FOR_GCC_4.9} \
+	-Wswitch-bool \
+	-Wlogical-not-parentheses \
+	-Wsizeof-array-argument \
+	-Wbool-compare  \
+	-Wodr \
+	-Wsuggest-final-types \
+	-Wsuggest-final-methods \
+	-Wsuggest-override
+
+  CXX_WARN_FLAGS_FOR_GCC_6 := \
+	${CXX_WARN_FLAGS_FOR_GCC_5} \
+	-Wnull-dereference -fdelete-null-pointer-checks \
+	-Wduplicated-cond \
+	-Wplacement-new=2 \
+	-Wconditionally-supported \
+	-fsized-deallocation \
+	-Wsized-deallocation \
+
+  CXX_WARN_FLAGS_FOR_GCC_7 := \
+	${CXX_WARN_FLAGS_FOR_GCC_6} \
+	-Wduplicated-branches \
+	-Wrestrict \
+	-Wregister \
+	-Wdangling-else \
+	-Walloc-size-larger-than=1073741824 \
+	-Walloc-zero \
+	-Walloca \
+	-Wformat-overflow=2 \
+	-Wformat-truncation=2 \
+	-Wstringop-overflow=4 \
+	-Waligned-new
+#	-Walloc-size-larger-than=1073741824 \ # Allocating more than 1GiB is likely a bug
+
+  CXX_WARN_FLAGS_FOR_GCC_8 := \
+	${CXX_WARN_FLAGS_FOR_GCC_7} \
+	-Wmultistatement-macros \
+	-Wcast-align=strict \
+
+  HARDENING_FLAGS_FOR_GCC_4.9 := \
+	-fstack-protector-all \
+	--param ssp-buffer-size=4 \
+	-fPIC
+
+ifeq ($(BUILD),release)
+  HARDENING_FLAGS_FOR_GCC_4.9 += -D_FORTIFY_SOURCE=2
+endif
+
+  HARDENING_FLAGS_FOR_GCC_5 := ${HARDENING_FLAGS_FOR_GCC_4.9}
+
+  HARDENING_FLAGS_FOR_GCC_6 := ${HARDENING_FLAGS_FOR_GCC_5}
+
+  HARDENING_FLAGS_FOR_GCC_7 := ${HARDENING_FLAGS_FOR_GCC_6}
+
+  HARDENING_FLAGS_FOR_GCC_8 := \
+	${HARDENING_FLAGS_FOR_GCC_7} \
+	-fcf-protection=full \
+	-fstack-clash-protection
+
+  GCC_VERSION := $(shell "${CXX}" -v 2>&1 | gawk '($$1 == "gcc") && ($$2 == "version") { sub(/\..*/, "", $$3) ; print $$3 ; exit }' )
+
+  ifeq ($(shell [ "${GCC_VERSION}" -ge 8 ] && echo $$?),0)
+	CXX_WARN_FLAGS := ${CXX_WARN_FLAGS_FOR_GCC_8}
+	CC_WARN_FLAGS := ${CC_WARN_FLAGS_FOR_GCC_8}
+	HARDENING_FLAGS := ${HARDENING_FLAGS_FOR_GCC_8}
+  endif
+
+  ifeq (${GCC_VERSION},7)
+	CXX_WARN_FLAGS := ${CXX_WARN_FLAGS_FOR_GCC_7}
+	CC_WARN_FLAGS := ${CC_WARN_FLAGS_FOR_GCC_7}
+	HARDENING_FLAGS := ${HARDENING_FLAGS_FOR_GCC_7}
+  endif
+
+  ifeq (${GCC_VERSION},6)
+	CXX_WARN_FLAGS := ${CXX_WARN_FLAGS_FOR_GCC_6}
+	CC_WARN_FLAGS := ${CC_WARN_FLAGS_FOR_GCC_6}
+	HARDENING_FLAGS := ${HARDENING_FLAGS_FOR_GCC_6}
+  endif
+
+  ifeq (${GCC_VERSION},5)
+	CXX_WARN_FLAGS := ${CXX_WARN_FLAGS_FOR_GCC_5}
+	CC_WARN_FLAGS := ${CC_WARN_FLAGS_FOR_GCC_5}
+	HARDENING_FLAGS := ${HARDENING_FLAGS_FOR_GCC_5}
+  endif
+
+  ifeq (${CXX_WARN_FLAGS},)
+	CXX_WARN_FLAGS := ${CXX_WARN_FLAGS_FOR_GCC_4.9}
+	CC_WARN_FLAGS := ${CC_WARN_FLAGS_FOR_GCC_4.9}
+	HARDENING_FLAGS := ${HARDENING_FLAGS_FOR_GCC_4.9}
+  endif
+
+
+# sanitizers on g++5.2
+  SANITIZERS = \
+	-fsanitize=address \
+	-fsanitize=undefined \
+	-fbounds-check \
+# -fcheck-pointer-bounds -mmpx # pointer checker is not supported with address sanitiser
+# -fsanitize=thread #is incompatible with sanitize address
+# -fsanitize=leak # leak sanitizer can't be used if either address or thread sanitizer is used
+
+  LDFLAGS = \
+	-pie \
+	-z noexecstack \
+	-z now\
+	-z relro \
+	-z nodlopen \
+	-z nodump \
+	-fuse-ld=gold \
+	-static-libasan -static-libubsan
+endif
+
+
+BUILD ?= debug
+
+CXXFLAGS := -std=c++17 -Werror -fno-rtti -fstrict-enums ${HARDENING_FLAGS} ${CXX_WARN_FLAGS} ${SANITIZERS} ${DEFINES}
+
+ifeq ($(BUILD),release)
+  CXXFLAGS += -O3 -flto
+  CFLAGS += -O3 -flto
+  LDFLAGS += -s
+else
+  CXXFLAGS += -O0 -ggdb3
+endif
+
+ifeq ($(GCOV),1)
+  CXXFLAGS += --coverage
+endif
+
+ifeq ($(GPROF),1)
+  CXXFLAGS += -pg
+endif
+
+ifeq ($(32_BITS),1)
+  CXXFLAGS += -m32
+endif
+
+all: app
+
+${APP_OBJS_OUTPUT_DIR}: ${OUTPUT_DIR}
+	"${MKDIR}" -p "$@"
+
+${OUTPUT_DIR}:
+	"${MKDIR}" -p "$@"
+
+${GENERATED_DIR}: ${OUTPUT_DIR}
+	"${MKDIR}" -p "$@"
+
+define specific_flags
+   $(if $(findstring resources.o,$(1)),-Wno-error,)\
+   $(if $(findstring moc_mainwindow.o,$(1)),-Wno-error,)
+endef
+
+${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -MD -c -o "$@" "$<"
+	# @cp $*.d $*.P; \
+	#    sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	#        -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	#    rm -f $*.d
+
+${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -c -o "$@" "$<"
+
+
+${RESOURCE_CODE}: ${RC_FILE} | ${GENERATED_DIR}
+	cd ${PROJECT_ROOT_DIR}/qdarkstyle && ${RCC} -o "$@" ${RC_FILE}
+
+resource: ${RESOURCE_OBJ}
+
+${UI_MAINWINDOW_HH}: ${PROJECT_ROOT_DIR}/src/mainwindow.ui | ${GENERATED_DIR}
+	"${UIC}" -o "$@" "$<"
+	"${SED}" -i '1i // Avoid warnings on generated headers\n#if !defined(__clang__)\n  #pragma GCC system_header\n#endif\n' "$@"
+	"${SED}" -i 's/^#include <mainwindow.h>$$/#include "mainwindow.hh"/' "$@"
+	"${SED}" -i 's/QObject::connect(\(.*\), MainWindow, qOverload<>(&QMainWindow::/QObject::connect(\1, reinterpret_cast<::MainWindow*>(MainWindow), qOverload<>(\&::MainWindow::/' "$@"
+
+${MOC_FILE}:  ${PROJECT_ROOT_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
+	"${MOC}" -o "$@" "$<"
+
+moc: ${MOC_FILE}
+
+${FLUIDSYNTH_LIB}: | ${OUTPUT_DIR}
+	set -eux ; \
+	if [ -e "$@" ] ; then \
+	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
+	else \
+	  "${MKDIR}" -p "${OUTPUT_DIR}/fluidsynth" || exit 1 ; \
+	  cmake -D CMAKE_BUILD_TYPE=Release \
+	        -D BUILD_SHARED_LIBS=off \
+	        -S "${PROJECT_ROOT_DIR}/3rd-party/fluidsynth/" \
+	        -B "${OUTPUT_DIR}/fluidsynth" ; \
+	  make -C "${OUTPUT_DIR}/fluidsynth"  V=1 VERBOSE=1 -j || exit 2 ; \
+	  FLUID_LIB="$$(find "${OUTPUT_DIR}/fluidsynth" -name 'libfluidsynth.a' | head -n 1)" ; \
+	  [ -f "$$FLUID_LIB" ] || exit 3 ; \
+	  cp -- "$$FLUID_LIB" "$@" || exit 4 ; \
+	fi
+
+${QT_CORE_LIB}: ${OUTPUT_DIR}
+	if [ -e "$@" ] ; then \
+	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
+	else \
+	  cd "${PROJECT_ROOT_DIR}/3rd-party/qt5/" || exit 2 ; \
+	  "${PROJECT_ROOT_DIR}/3rd-party/qt5/init-repository"  \
+	    --module-subset=qtsvg,qtbase,qtimageformats \
+	    -f || exit 3 ; \
+	  cd "${PROJECT_ROOT_DIR}/3rd-party/qt5/" || exit 4 ; \
+	  "${PROJECT_ROOT_DIR}/3rd-party/qt5/configure" \
+	    -static \
+	    -release \
+	    -no-guess-compiler \
+	    -c++std c++17 \
+	    -sse2 \
+	    -no-icu \
+	    -gui \
+	    -widgets \
+	    -no-dbus \
+	    -no-glib \
+	    -no-ssl \
+	    -no-pulseaudio \
+	    -no-alsa \
+	    -no-openssl \
+	    -nomake examples \
+	    -feature-thread \
+	    -opensource \
+	    -confirm-license \
+	    -submodules qtgui,qtwidgets,qtsvg,qtbase \
+	    -- -B "${OUTPUT_DIR}/qt" || exit 5 ; \
+	  ninja --verbose -C "${OUTPUT_DIR}/qt" || exit 6 ; \
+	fi
+
+qt: ${QT_CORE_LIB}
+
+fluidsynth: ${FLUIDSYNTH_LIB}
+
+${TARGET}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} -o "$@" \
+	  ${APP_OBJS} \
+	  ${MOC_OBJ} \
+	  ${RESOURCE_OBJ} \
+	  ${FLUIDSYNTH_LIB} \
+	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
+	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
+	  ${OUTPUT_DIR}/qt/qtbase/src/gui/CMakeFiles/Gui_resources_1.dir/.rcc/qrc_qpdf.cpp.o \
+	  ${LIBS} \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/generic/libqtuiotouchplugin.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/iconengines/libqsvgicon.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqgif.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqico.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqjpeg.a \
+	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqsvg.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6SvgWidgets.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Svg.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Widgets.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGLWidgets.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGL.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Gui.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Concurrent.a \
+	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a \
+	  -lstdc++
+
+
+
+app: ${TARGET}
+
+.PHONY: fluidsynth qt resource moc all app
+
+clean:
+	[ -d "${OUTPUT_DIR}" ] && rm -rf "${OUTPUT_DIR}"

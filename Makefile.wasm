@@ -15,8 +15,8 @@ RCC := ${QT_HOME}/gcc_64/libexec/rcc
 SED := sed
 MKDIR := mkdir
 
-OUTPUT_DIR := $(shell realpath ./build_dir_for_wasm_output)
-THIS_DIR := $(shell realpath .)
+PROJECT_ROOT_DIR := $(shell realpath .)
+OUTPUT_DIR := ${PROJECT_ROOT_DIR}/build_dir_for_wasm_output
 
 APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
 
@@ -28,22 +28,37 @@ MOC_OBJ := ${GENERATED_DIR}/moc_mainwindow.o
 FLUIDSYNTH_LIB := ${OUTPUT_DIR}/libfluidsynth.a
 QT_CORE_LIB := ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a
 
+QT_INCLUDES := -isystem ${OUTPUT_DIR}/qt/qtbase/include\
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtSvgWidgets \
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtWidgets \
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtSvg \
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtGui \
+	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtCore
+
+FLUIDSYNTH_INCLUDES := -isystem ${OUTPUT_DIR}/fluidsynth-emscripten/include \
+	               -isystem ${PROJECT_ROOT_DIR}/3rd-party/fluidsynth-emscripten/include
+
+INCLUDES := ${QT_INCLUDES} ${FLUIDSYNTH_INCLUDES} \
+	    -I ${GENERATED_DIR}
+
+CXXFLAGS := -pthread -O2 -std=c++17
+
 # ## Need to install qtsharedtools with the maintenance tools
 
-APP_SRC := ${THIS_DIR}/src/main.cc  \
-	   ${THIS_DIR}/src/mainwindow.cc \
-	   ${THIS_DIR}/src/keyboard.cc \
-	   ${THIS_DIR}/src/signals_handler.cc \
-	   ${THIS_DIR}/src/bin_file_reader.cc \
-	   ${THIS_DIR}/src/utils.cc \
-	   ${THIS_DIR}/src/measures_sequence_extractor.cc \
-	   ${THIS_DIR}/src/sound_player.cc \
-	   ${THIS_DIR}/src/sound_listener.cc \
-	   ${THIS_DIR}/src/load_file_from_wasm.cc
+APP_SRC := ${PROJECT_ROOT_DIR}/src/main.cc  \
+	   ${PROJECT_ROOT_DIR}/src/mainwindow.cc \
+	   ${PROJECT_ROOT_DIR}/src/keyboard.cc \
+	   ${PROJECT_ROOT_DIR}/src/signals_handler.cc \
+	   ${PROJECT_ROOT_DIR}/src/bin_file_reader.cc \
+	   ${PROJECT_ROOT_DIR}/src/utils.cc \
+	   ${PROJECT_ROOT_DIR}/src/measures_sequence_extractor.cc \
+	   ${PROJECT_ROOT_DIR}/src/sound_player.cc \
+	   ${PROJECT_ROOT_DIR}/src/sound_listener.cc \
+	   ${PROJECT_ROOT_DIR}/src/load_file_from_wasm.cc
 
-APP_OBJS := ${APP_SRC:${THIS_DIR}/src/%.cc=${APP_OBJS_OUTPUT_DIR}/%.o}
+APP_OBJS := ${APP_SRC:${PROJECT_ROOT_DIR}/src/%.cc=${APP_OBJS_OUTPUT_DIR}/%.o}
 
-RC_FILE := ${THIS_DIR}/qdarkstyle/style.qrc
+RC_FILE := ${PROJECT_ROOT_DIR}/qdarkstyle/style.qrc
 
 RESOURCE_CODE := ${OUTPUT_DIR}/generated/resources.cc
 RESOURCE_OBJ :=  ${OUTPUT_DIR}/generated/resources.o
@@ -78,7 +93,7 @@ ${FLUIDSYNTH_LIB}: ${OUTPUT_DIR}
 	                -D CMAKE_BUILD_TYPE=Release \
 	                -D BUILD_SHARED_LIBS=off \
 	                -D CMAKE_C_FLAGS=-D__EMSCRIPTEN_PTHREADS__=1 \
-	                -S "${THIS_DIR}/3rd-party/fluidsynth-emscripten/" \
+	                -S "${PROJECT_ROOT_DIR}/3rd-party/fluidsynth-emscripten/" \
 	                -B "${OUTPUT_DIR}/fluidsynth-emscripten" ; \
 	  "${EMMAKE}" make -C "${OUTPUT_DIR}/fluidsynth-emscripten"  V=1 VERBOSE=1 -j || exit 6 ; \
 	  FLUID_LIB="$$(find "${OUTPUT_DIR}/fluidsynth-emscripten" -name 'libfluidsynth.a' | head -n 1)" ; \
@@ -90,13 +105,13 @@ ${FLUIDSYNTH_LIB}: ${OUTPUT_DIR}
 
 fluidsynth: ${FLUIDSYNTH_LIB}
 
-${UI_MAINWINDOW_HH}: ${THIS_DIR}/src/mainwindow.ui | ${GENERATED_DIR}
+${UI_MAINWINDOW_HH}: ${PROJECT_ROOT_DIR}/src/mainwindow.ui | ${GENERATED_DIR}
 	"${UIC}" -o "$@" "$<"
 	"${SED}" -i '1i // Avoid warnings on generated headers\n#if !defined(__clang__)\n  #pragma GCC system_header\n#endif\n' "$@"
 	"${SED}" -i 's/^#include <mainwindow.h>$$/#include "mainwindow.hh"/' "$@"
 	"${SED}" -i 's/QObject::connect(\(.*\), MainWindow, qOverload<>(&QMainWindow::/QObject::connect(\1, reinterpret_cast<::MainWindow*>(MainWindow), qOverload<>(\&::MainWindow::/' "$@"
 
-${MOC_FILE}:  ${THIS_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
+${MOC_FILE}:  ${PROJECT_ROOT_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
 	"${MOC}" -o "$@" "$<"
 
 
@@ -104,12 +119,12 @@ ${QT_CORE_LIB}: ${OUTPUT_DIR}
 	if [ -e "$@" ] ; then \
 	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
 	else \
-	  cd "${THIS_DIR}/3rd-party/qt5/" || exit 2 ; \
-	  "${THIS_DIR}/3rd-party/qt5/init-repository"  \
+	  cd "${PROJECT_ROOT_DIR}/3rd-party/qt5/" || exit 2 ; \
+	  "${PROJECT_ROOT_DIR}/3rd-party/qt5/init-repository"  \
 	    --module-subset=qtsvg,qtbase,qtimageformats \
 	    -f || exit 3 ; \
-	  cd "${THIS_DIR}/3rd-party/qt5/" || exit 4 ; \
-	  "${THIS_DIR}/3rd-party/qt5/configure" \
+	  cd "${PROJECT_ROOT_DIR}/3rd-party/qt5/" || exit 4 ; \
+	  "${PROJECT_ROOT_DIR}/3rd-party/qt5/configure" \
 	    -static \
 	    -release \
 	    -no-guess-compiler \
@@ -141,70 +156,25 @@ ${LILYPLAYER_HTML}: ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html ${QT_HO
 
 loader: ${LILYPLAYER_HTML}
 
-${APP_OBJS_OUTPUT_DIR}/%.o: ${THIS_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
-	${EMCC} \
-	  -pthread \
-	  -O2 \
-	  -std=c++17 \
-	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
-	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
-	  -I ${OUTPUT_DIR}/generated \
-	  -I ${QT_HOME}/wasm_32/include \
-	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
-	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
-	  -I ${QT_HOME}/wasm_32/include/QtSvg \
-	  -I ${QT_HOME}/wasm_32/include/QtGui \
-	  -I ${QT_HOME}/wasm_32/include/QtCore \
-	  -c \
-	  -o "$@" \
-	  "$<"
+${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+	${EMCXX} ${CXXFLAGS} ${INCLUDES} -c -o "$@" "$<"
 
 app_objs: ${APP_OBJS}
 
 
 ${RESOURCE_CODE}: ${RC_FILE} | ${GENERATED_DIR}
-	cd ${THIS_DIR}/qdarkstyle && ${RCC} -o "$@" ${RC_FILE}
+	cd ${PROJECT_ROOT_DIR}/qdarkstyle && ${RCC} -o "$@" ${RC_FILE}
 
-${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc ${FLUIDSYNTH_LIB}
-	${EMCXX} \
-	  -pthread \
-	  -O2 \
-	  -std=c++17 \
-	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
-	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
-	  -I ${OUTPUT_DIR}/generated \
-	  -I ${QT_HOME}/wasm_32/include \
-	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
-	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
-	  -I ${QT_HOME}/wasm_32/include/QtSvg \
-	  -I ${QT_HOME}/wasm_32/include/QtGui \
-	  -I ${QT_HOME}/wasm_32/include/QtCore \
-	  -c \
-	  -o "$@" \
-	  "$<"
+${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+	${EMCXX} ${CXXFLAGS} ${INCLUDES} -c -o "$@" "$<"
 
 resource: ${RESOURCE_OBJ}
 
-${JS_PLUGIN_IMPORT_SRC}: ${THIS_DIR}/lilyplayer.pro | ${GENERATED_DIR}
+${JS_PLUGIN_IMPORT_SRC}: ${PROJECT_ROOT_DIR}/lilyplayer.pro | ${GENERATED_DIR}
 	${WASM_QMAKE} -o ${OUTPUT_DIR}/generated "$<"
 
-${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC} ${FLUIDSYNTH_LIB}
-	${EMCXX} \
-	  -pthread \
-	  -O2 \
-	  -std=c++17 \
-	  -I ${OUTPUT_DIR}/fluidsynth-emscripten/include \
-	  -I ${THIS_DIR}/3rd-party/fluidsynth-emscripten/include \
-	  -I ${OUTPUT_DIR}/generated \
-	  -I ${QT_HOME}/wasm_32/include \
-	  -I ${QT_HOME}/wasm_32/include/QtSvgWidgets \
-	  -I ${QT_HOME}/wasm_32/include/QtWidgets \
-	  -I ${QT_HOME}/wasm_32/include/QtSvg \
-	  -I ${QT_HOME}/wasm_32/include/QtGui \
-	  -I ${QT_HOME}/wasm_32/include/QtCore \
-	  -c \
-	  -o "$@" \
-	  "${JS_PLUGIN_IMPORT_SRC}"
+${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+	${EMCXX} ${CXXFLAGS} ${INCLUDES} -c -o "$@" "$<"
 
 js_plugin_import: ${JS_PLUGIN_IMPORT_OBJ}
 
@@ -260,7 +230,7 @@ ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_H
 	  ${OUTPUT_DIR}/qt/qtbase/src/plugins/platforms/wasm/CMakeFiles/QWasmIntegrationPlugin_resources_1.dir/.rcc/qrc_wasmfonts.cpp.o \
 	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
 	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
-	  --embed-file ${THIS_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2@/tmp/Yamaha-Grand-Lite-v2.0.sf2
+	  --embed-file ${PROJECT_ROOT_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2@/tmp/Yamaha-Grand-Lite-v2.0.sf2
 
 app: ${LILYPLAYER_JS}
 
