@@ -27,8 +27,13 @@ QT_INCLUDES := -isystem ${OUTPUT_DIR}/qt/qtbase/include\
 	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtGui \
 	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtCore
 
+QT_DEP_LIBS := $(shell pkg-config --libs libpcre2-16 libpng libzstd harfbuzz)
+
 FLUIDSYNTH_INCLUDES := -isystem ${OUTPUT_DIR}/fluidsynth/include \
 	               -isystem ${PROJECT_ROOT_DIR}/3rd-party/fluidsynth/include
+
+FLUIDSYNTH_DEP_LIBS := $(shell pkg-config --libs libinstpatch-1.0 alsa dbus-1 jack sdl2 readline) \
+		        -lpulse -lpulse-simple
 
 INCLUDES := ${QT_DEFINES} ${QT_INCLUDES} \
 	    ${FLUIDSYNTH_INCLUDES} \
@@ -36,8 +41,9 @@ INCLUDES := ${QT_DEFINES} ${QT_INCLUDES} \
 
 LIBS := -lGL \
 	-lpthread \
-	$(shell pkg-config --libs libinstpatch-1.0 alsa dbus-1 jack sdl2 readline libpcre2-16 libpng libzstd harfbuzz) \
-	-lgomp -lpulse -lpulse-simple
+	${QT_DEP_LIBS} \
+	${FLUIDSYNTH_DEP_LIBS} \
+	-lgomp
 
 APP_SRC := ${PROJECT_ROOT_DIR}/src/main.cc  \
 	   ${PROJECT_ROOT_DIR}/src/mainwindow.cc \
