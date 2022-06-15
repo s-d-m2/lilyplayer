@@ -21,7 +21,7 @@ SED := sed
 MKDIR := mkdir
 CP := cp
 RM := rm
-
+GAWK := gawk
 
 PROJECT_ROOT_DIR := $(shell realpath .)
 
@@ -366,7 +366,7 @@ endif
 	-fcf-protection=full \
 	-fstack-clash-protection
 
-  GCC_VERSION := $(shell "${CXX}" -v 2>&1 | gawk '($$1 == "gcc") && ($$2 == "version") { sub(/\..*/, "", $$3) ; print $$3 ; exit }' )
+  GCC_VERSION := $(shell "${CXX}" -v 2>&1 | ${GAWK} '($$1 == "gcc") && ($$2 == "version") { sub(/\..*/, "", $$3) ; print $$3 ; exit }' )
 
   ifeq ($(shell [ "${GCC_VERSION}" -ge 8 ] && echo $$?),0)
 	CXX_WARN_FLAGS := ${CXX_WARN_FLAGS_FOR_GCC_8}
