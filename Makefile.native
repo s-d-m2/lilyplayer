@@ -1,81 +1,110 @@
-dummy := $(shell ./configure)
-include Makefile.vars
+RCC         = "/usr/lib/qt6/libexec/rcc"
+UIC         = "/usr/lib/qt6/libexec/uic"
+MOC         = "/usr/lib/qt6/libexec/moc"
 
-TARGET_DIR := ../bin
-TARGET := ${TARGET_DIR}/lilyplayer
+QT_DEFINES  := -DQT_NO_DEBUG -D_REENTRANT -DQT_WIDGETS_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_SVG_LIB
+QT_INCLUDES := -isystem "/usr/include/x86_64-linux-gnu/qt6" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtSvg" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtCore" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtWidgets" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtSvgWidgets" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtGui"
 
-LIBS +=  -lfluidsynth
-INCLUDES += -I../3rd-party/ -isystem ../3rd-party/
+QT_LIBS     := /usr/lib/x86_64-linux-gnu/libQt6Svg.so \
+	       /usr/lib/x86_64-linux-gnu/libQt6Widgets.so \
+	       /usr/lib/x86_64-linux-gnu/libQt6Gui.so \
+	       /usr/lib/x86_64-linux-gnu/libQt6Core.so \
+	       /usr/lib/x86_64-linux-gnu/libQt6SvgWidgets.so \
+	       -lGL -lpthread
 
-LIBS += ${QT_LIBS}
-DEFINES += ${QT_DEFINES}
-INCLUDES += ${QT_INCLUDES}
+SED := sed
+MKDIR := mkdir
+CP := cp
+RM := rm
+GAWK := gawk
 
-FORMS := mainwindow.ui
-MOC_FILES := ${FORMS:%.ui=moc_%.cc}
-FORMS_HEADERS := ${FORMS:%.ui=ui_%.hh}
-RC_FILE := ../qdarkstyle/style.qrc
-QT_STYLE_FILES := ../qdarkstyle/rc/Vsepartoolbar.png \
-		../qdarkstyle/rc/close-pressed.png \
-		../qdarkstyle/rc/Hmovetoolbar.png \
-		../qdarkstyle/rc/up_arrow.png \
-		../qdarkstyle/rc/left_arrow_disabled.png \
-		../qdarkstyle/rc/close-hover.png \
-		../qdarkstyle/rc/checkbox_unchecked.png \
-		../qdarkstyle/rc/radio_unchecked_disabled.png \
-		../qdarkstyle/rc/radio_checked.png \
-		../qdarkstyle/rc/checkbox_checked_disabled.png \
-		../qdarkstyle/rc/Hsepartoolbar.png \
-		../qdarkstyle/rc/sizegrip.png \
-		../qdarkstyle/rc/down_arrow.png \
-		../qdarkstyle/rc/stylesheet-branch-more.png \
-		../qdarkstyle/rc/radio_unchecked.png \
-		../qdarkstyle/rc/branch_closed-on.png \
-		../qdarkstyle/rc/checkbox_unchecked_disabled.png \
-		../qdarkstyle/rc/branch_open.png \
-		../qdarkstyle/rc/left_arrow.png \
-		../qdarkstyle/rc/stylesheet-branch-end.png \
-		../qdarkstyle/rc/undock.png \
-		../qdarkstyle/rc/right_arrow.png \
-		../qdarkstyle/rc/checkbox_indeterminate.png \
-		../qdarkstyle/rc/checkbox_checked_focus.png \
-		../qdarkstyle/rc/stylesheet-vline.png \
-		../qdarkstyle/rc/radio_checked_focus.png \
-		../qdarkstyle/rc/branch_closed.png \
-		../qdarkstyle/rc/right_arrow_disabled.png \
-		../qdarkstyle/rc/down_arrow_disabled.png \
-		../qdarkstyle/rc/branch_open-on.png \
-		../qdarkstyle/rc/radio_unchecked_focus.png \
-		../qdarkstyle/rc/Vmovetoolbar.png \
-		../qdarkstyle/rc/transparent.png \
-		../qdarkstyle/rc/close.png \
-		../qdarkstyle/rc/radio_checked_disabled.png \
-		../qdarkstyle/rc/checkbox_checked.png \
-		../qdarkstyle/rc/up_arrow_disabled.png \
-		../qdarkstyle/rc/checkbox_indeterminate_focus.png \
-		../qdarkstyle/rc/checkbox_unchecked_focus.png \
-		../qdarkstyle/style.qss \
+PROJECT_ROOT_DIR := $(shell realpath .)
+
+
+OUTPUT_DIR := ${PROJECT_ROOT_DIR}/build_dir_for_native_output
+TARGET := ${OUTPUT_DIR}/lilyplayer
+
+APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
+GENERATED_DIR := ${OUTPUT_DIR}/generated
+
+FLUIDSYNTH_INCLUDES :=
+FLUIDSYNTH_LIBS := -lfluidsynth
+
+INCLUDES := ${QT_DEFINES} ${QT_INCLUDES} \
+	    ${FLUIDSYNTH_INCLUDES} \
+	    -I ${GENERATED_DIR}
+
+LIBS := ${QT_LIBS} \
+	${FLUIDSYNTH_LIBS}
+
+APP_SRC := ${PROJECT_ROOT_DIR}/src/main.cc  \
+	   ${PROJECT_ROOT_DIR}/src/mainwindow.cc \
+	   ${PROJECT_ROOT_DIR}/src/keyboard.cc \
+	   ${PROJECT_ROOT_DIR}/src/signals_handler.cc \
+	   ${PROJECT_ROOT_DIR}/src/bin_file_reader.cc \
+	   ${PROJECT_ROOT_DIR}/src/utils.cc \
+	   ${PROJECT_ROOT_DIR}/src/measures_sequence_extractor.cc \
+	   ${PROJECT_ROOT_DIR}/src/sound_player.cc \
+	   ${PROJECT_ROOT_DIR}/src/sound_listener.cc
+
+APP_OBJS := ${APP_SRC:${PROJECT_ROOT_DIR}/src/%.cc=${APP_OBJS_OUTPUT_DIR}/%.o}
+
+RC_FILE := ${PROJECT_ROOT_DIR}/qdarkstyle/style.qrc
+QT_STYLE_FILES := ${PROJECT_ROOT_DIR}/qdarkstyle/rc/Vsepartoolbar.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/close-pressed.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/Hmovetoolbar.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/up_arrow.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/left_arrow_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/close-hover.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_unchecked.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_unchecked_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_checked.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_checked_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/Hsepartoolbar.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/sizegrip.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/down_arrow.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/stylesheet-branch-more.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_unchecked.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/branch_closed-on.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_unchecked_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/branch_open.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/left_arrow.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/stylesheet-branch-end.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/undock.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/right_arrow.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_indeterminate.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_checked_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/stylesheet-vline.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_checked_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/branch_closed.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/right_arrow_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/down_arrow_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/branch_open-on.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_unchecked_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/Vmovetoolbar.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/transparent.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/close.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/radio_checked_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_checked.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/up_arrow_disabled.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_indeterminate_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/rc/checkbox_unchecked_focus.png \
+		${PROJECT_ROOT_DIR}/qdarkstyle/style.qss \
 		${RC_FILE}
 
-RESOURCE_CODE := resources.cc
+RESOURCE_CODE := ${OUTPUT_DIR}/generated/resources.cc
+RESOURCE_OBJ :=  ${OUTPUT_DIR}/generated/resources.o
 
-SRC :=  main.cc  \
-	mainwindow.cc \
-	keyboard.cc \
-	signals_handler.cc \
-	bin_file_reader.cc \
-	utils.cc \
-	measures_sequence_extractor.cc \
-	sound_listener.cc \
-	sound_player.cc \
-	${MOC_FILES} \
-	${RESOURCE_CODE}
+UI_MAINWINDOW_HH := ${GENERATED_DIR}/ui_mainwindow.hh
+MOC_FILE := ${GENERATED_DIR}/moc_mainwindow.cc
+MOC_OBJ := ${GENERATED_DIR}/moc_mainwindow.o
 
-OBJS := ${SRC:.cc=.o}
-
-
-
-COVERAGE_HTML_DIR := ../COVERAGE_OUTPUT
+COVERAGE_HTML_DIR := ${GENERATED_DIR}/coverage_output
 LCOV=lcov
 LCOV_FLAGS= --rc lcov_branch_coverage=1 \
 	    --rc genhtml_branch_coverage=1 \
@@ -337,7 +366,7 @@ endif
 	-fcf-protection=full \
 	-fstack-clash-protection
 
-  GCC_VERSION := $(shell "${CXX}" -v 2>&1 | gawk '($$1 == "gcc") && ($$2 == "version") { sub(/\..*/, "", $$3) ; print $$3 ; exit }' )
+  GCC_VERSION := $(shell "${CXX}" -v 2>&1 | ${GAWK} '($$1 == "gcc") && ($$2 == "version") { sub(/\..*/, "", $$3) ; print $$3 ; exit }' )
 
   ifeq ($(shell [ "${GCC_VERSION}" -ge 8 ] && echo $$?),0)
 	CXX_WARN_FLAGS := ${CXX_WARN_FLAGS_FOR_GCC_8}
@@ -393,7 +422,7 @@ endif
 
 BUILD ?= debug
 
-CXXFLAGS := -std=c++1z -Werror -fno-rtti -fstrict-enums ${HARDENING_FLAGS} ${CXX_WARN_FLAGS} ${SANITIZERS} ${DEFINES}
+CXXFLAGS := -std=c++17 -Werror -fno-rtti -fstrict-enums ${HARDENING_FLAGS} ${CXX_WARN_FLAGS} ${SANITIZERS} ${DEFINES}
 
 ifeq ($(BUILD),release)
   CXXFLAGS += -O3 -flto
@@ -415,67 +444,67 @@ ifeq ($(32_BITS),1)
   CXXFLAGS += -m32
 endif
 
+all: app
 
-all:  ${TARGET}
-lilyplayer: ${TARGET}
+${APP_OBJS_OUTPUT_DIR}: ${OUTPUT_DIR}
+	"${MKDIR}" -p "$@"
 
-${TARGET}: ${OBJS}
-	-mkdir -p ${TARGET_DIR}
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -o ${TARGET} ${OBJS} ${LIBS} -lstdc++
+${OUTPUT_DIR}:
+	"${MKDIR}" -p "$@"
 
-${RESOURCE_CODE}: ${QT_STYLE_FILES}
-	cd ../qdarkstyle && ${RCC} -o ../src/"$@" ${RC_FILE}
+${GENERATED_DIR}: ${OUTPUT_DIR}
+	"${MKDIR}" -p "$@"
 
 define specific_flags
    $(if $(findstring resources.o,$(1)),-Wno-error,)\
    $(if $(findstring moc_mainwindow.o,$(1)),-Wno-error,)
 endef
 
-%.o: %.cc ${FORMS_HEADERS}
+${APP_OBJS_OUTPUT_DIR}/mainwindow.o: ${UI_MAINWINDOW_HH}
+
+${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}
 	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -MD -c -o "$@" "$<"
-	@cp $*.d $*.P; \
-	   sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	       -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	   rm -f $*.d
+	${CP} ${APP_OBJS_OUTPUT_DIR}/$*.d ${APP_OBJS_OUTPUT_DIR}/$*.P; \
+	   ${SED} -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	       -e '/^$$/ d' -e 's/$$/ :/' < ${APP_OBJS_OUTPUT_DIR}/$*.d >> ${APP_OBJS_OUTPUT_DIR}/$*.P; \
+	   ${RM} -f ${APP_OBJS_OUTPUT_DIR}/$*.d
 
-moc_%.cc: %.hh ui_%.hh
-	${MOC} ${QT_DEFINES} ${QT_INCLUDES:-isystem=-I} -o "$@" "$<"
+${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc
+	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -c -o "$@" "$<"
 
-ui_%.hh: %.ui
-	${UIC} -o "$@" "$<" && \
-	sed -i '1i // Avoid warnings on generated headers\n#if !defined(__clang__)\n  #pragma GCC system_header\n#endif\n' "$@"
 
-scan-build:
-	${SCAN_BUILD} -analyze-headers --use-c++=${CLANG_CXX} --use-cc=${CLANG_CC} --status-bugs --keep-going  make -B TOOLCHAIN=clang
+${RESOURCE_CODE}: ${RC_FILE} | ${GENERATED_DIR}
+	cd ${PROJECT_ROOT_DIR}/qdarkstyle && ${RCC} -o "$@" ${RC_FILE}
 
-${COVERAGE_HTML_DIR}:
-	[ -d "$@" ] || mkdir -p "$@"
+resource: ${RESOURCE_OBJ}
 
-coverage: | ${COVERAGE_HTML_DIR}
-	${MAKE} GCOV=1 -B CXX=g++
-	${LCOV} ${LCOV_FLAGS} --zerocounters
-	${MAKE} check
-	${LCOV} ${LCOV_FLAGS} --no-external --capture --output-file "${TARGET}.info"
-	${GENHTML} ${GENHTML_FLAGS} --output-directory="${COVERAGE_HTML_DIR}" "${TARGET}.info"
+${UI_MAINWINDOW_HH}: ${PROJECT_ROOT_DIR}/src/mainwindow.ui | ${GENERATED_DIR}
+	"${UIC}" -o "$@" "$<"
+	"${SED}" -i '1i // Avoid warnings on generated headers\n#if !defined(__clang__)\n  #pragma GCC system_header\n#endif\n' "$@"
+	"${SED}" -i 's/^#include <mainwindow.h>$$/#include "mainwindow.hh"/' "$@"
+	"${SED}" -i 's/^#include <QtWidgets\/QAction>$$/#include <QtGui\/QAction>/' "$@"
+	"${SED}" -i 's/QObject::connect(\(.*\), MainWindow, qOverload<>(&QMainWindow::/QObject::connect(\1, reinterpret_cast<::MainWindow*>(MainWindow), qOverload<>(\&::MainWindow::/' "$@"
 
-profiling:
-	${MAKE} GPROF=1 BUILD=release SANITIZERS= -B CXX=g++
-	-rm -f gmon.out
-	${TARGET}
-	${GPROF} "${TARGET}" gmon.out > "${PROFILING_OUTPUT}"
+${MOC_FILE}:  ${PROJECT_ROOT_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
+	"${MOC}" -o "$@" "$<"
 
-check: ${TARGET}
-	${TARGET}
+moc: ${MOC_FILE}
 
+${TARGET}: ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} -o "$@" \
+	  ${APP_OBJS} \
+	  ${MOC_OBJ} \
+	  ${RESOURCE_OBJ} \
+	  ${LIBS} \
+	  -lstdc++
+
+
+
+app: ${TARGET}
+
+.PHONY: fluidsynth qt resource moc all app
 
 clean:
-	rm -rf ${TARGET} ${OBJS} $(SRC:%.cc=$/%.P) ${MOC_FILES} ${FORMS_HEADERS} Makefile.vars ${RESOURCE_CODE} \
-	       $(SRC:%.cc=%.gcda) $(SRC:%.cc=%.gcno) $(SRC:%.cc=%.info) $(SRC:%.cc=%.gcna) \
-	       "${COVERAGE_HTML_DIR}"  "${TARGET}.info" gmon.out  "${PROFILING_OUTPUT}"
+	[ -d "${OUTPUT_DIR}" ] && rm -rf "${OUTPUT_DIR}"
 
-
-.PHONY: all clean scan-build coverage check profiling lilyplayer
-
-.SUFFIXES:
-
--include $(SRC:%.cc=$/%.P)
+-include $(APP_OBJS:%.o=$/%.P)
