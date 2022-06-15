@@ -10,22 +10,22 @@ OUTPUT_DIR := ${PROJECT_ROOT_DIR}/build_dir_for_native_output
 TARGET := ${OUTPUT_DIR}/lilyplayer
 
 APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
-
 GENERATED_DIR := ${OUTPUT_DIR}/generated
+QT_OUTPUT_DIR := ${OUTPUT_DIR}/qt
 
 FLUIDSYNTH_LIB := ${OUTPUT_DIR}/libfluidsynth.a
-QT_CORE_LIB := ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a
+QT_CORE_LIB := ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Core.a
 
 SED := sed
 MKDIR := mkdir
 
-QT_DEFINES := -DQT_NO_DEBUG -D_REENTRANT -DQT_WIDGETS_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_SVG_LIB
-QT_INCLUDES := -isystem ${OUTPUT_DIR}/qt/qtbase/include\
-	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtSvgWidgets \
-	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtWidgets \
-	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtSvg \
-	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtGui \
-	       -isystem ${OUTPUT_DIR}/qt/qtbase/include/QtCore
+QT_DEFINES := -DQT_NO_DEBUG -D_REENTRANT -DQT_WIDGETS_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_SVG_LIB -DQT_STATICPLUGIN
+QT_INCLUDES := -isystem ${QT_OUTPUT_DIR}/qtbase/include\
+	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtSvgWidgets \
+	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtWidgets \
+	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtSvg \
+	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtGui \
+	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtCore
 
 QT_DEP_LIBS := $(shell pkg-config --libs libpcre2-16 libpng libzstd harfbuzz)
 
@@ -455,6 +455,9 @@ ${APP_OBJS_OUTPUT_DIR}: ${OUTPUT_DIR}
 ${OUTPUT_DIR}:
 	"${MKDIR}" -p "$@"
 
+${QT_OUTPUT_DIR}: ${OUTPUT_DIR}
+	"${MKDIR}" -p "$@"
+
 ${GENERATED_DIR}: ${OUTPUT_DIR}
 	"${MKDIR}" -p "$@"
 
@@ -506,7 +509,7 @@ ${FLUIDSYNTH_LIB}: | ${OUTPUT_DIR}
 	  cp -- "$$FLUID_LIB" "$@" || exit 4 ; \
 	fi
 
-${QT_CORE_LIB}: ${OUTPUT_DIR}
+${QT_CORE_LIB}: ${QT_OUTPUT_DIR}
 	if [ -e "$@" ] ; then \
 	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
 	else \
@@ -535,8 +538,9 @@ ${QT_CORE_LIB}: ${OUTPUT_DIR}
 	    -opensource \
 	    -confirm-license \
 	    -submodules qtgui,qtwidgets,qtsvg,qtbase \
-	    -- -B "${OUTPUT_DIR}/qt" || exit 5 ; \
-	  ninja --verbose -C "${OUTPUT_DIR}/qt" || exit 6 ; \
+	    -cmake-generator Ninja \
+	    -- -B "${QT_OUTPUT_DIR}" || exit 5 ; \
+	  ninja --verbose -C "${QT_OUTPUT_DIR}" || exit 6 ; \
 	fi
 
 qt: ${QT_CORE_LIB}
@@ -549,24 +553,23 @@ ${TARGET}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MO
 	  ${MOC_OBJ} \
 	  ${RESOURCE_OBJ} \
 	  ${FLUIDSYNTH_LIB} \
-	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
-	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
-	  ${OUTPUT_DIR}/qt/qtbase/src/gui/CMakeFiles/Gui_resources_1.dir/.rcc/qrc_qpdf.cpp.o \
+	  ${QT_OUTPUT_DIR}/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
+	  ${QT_OUTPUT_DIR}/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
+	  ${QT_OUTPUT_DIR}/qtbase/src/gui/CMakeFiles/Gui_resources_1.dir/.rcc/qrc_qpdf.cpp.o \
 	  ${LIBS} \
-	  ${OUTPUT_DIR}/qt/qtbase/plugins/generic/libqtuiotouchplugin.a \
-	  ${OUTPUT_DIR}/qt/qtbase/plugins/iconengines/libqsvgicon.a \
-	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqgif.a \
-	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqico.a \
-	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqjpeg.a \
-	  ${OUTPUT_DIR}/qt/qtbase/plugins/imageformats/libqsvg.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6SvgWidgets.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Svg.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Widgets.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGLWidgets.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6OpenGL.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Gui.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Concurrent.a \
-	  ${OUTPUT_DIR}/qt/qtbase/lib/libQt6Core.a \
+	  ${QT_OUTPUT_DIR}/qtbase/plugins/generic/libqtuiotouchplugin.a \
+	  ${QT_OUTPUT_DIR}/qtbase/plugins/iconengines/libqsvgicon.a \
+	  ${QT_OUTPUT_DIR}/qtbase/plugins/imageformats/libqico.a \
+	  ${QT_OUTPUT_DIR}/qtbase/plugins/imageformats/libqjpeg.a \
+	  ${QT_OUTPUT_DIR}/qtbase/plugins/imageformats/libqsvg.a \
+	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6SvgWidgets.a \
+	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Svg.a \
+	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Widgets.a \
+	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6OpenGLWidgets.a \
+	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6OpenGL.a \
+	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Gui.a \
+	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Concurrent.a \
+	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Core.a \
 	  -lstdc++
 
 
