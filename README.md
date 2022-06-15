@@ -22,13 +22,15 @@ Build dependencies
 It also depends on the following libraries:
 
 - [`Qt`][qt6]
+- [`fluidsynth][fluidsynth]
 
-[qt6]: http://www.qt.io/
+[qt6]: https://www.qt.io/
+[fluidsynth]: https://www.fluidsynth.org
 
-On `debian`, one can install them the following way:
+On `debian`, one can install the build dependencies the following way:
 
-	sudo apt-get install qt6-base-dev qt6-base-dev-tools g++ libfluidsynth-dev \
-	  gawk sed autoconf libtool libasound2-dev
+	sudo apt-get install qt6-base-dev qt6-base-dev-tools libqt6svg6-dev  g++ libfluidsynth-dev \
+	  gawk sed coreutils
 
 Compiling instructions
 -------------------
@@ -37,11 +39,11 @@ Once all the dependencies have been installed, you can simply compile `lilyplaye
 
 	git clone --recursive 'https://github.com/s-d-m/lilyplayer'
 	cd lilyplayer
-	make
+	make -f Makefile.native
 
-This will generate the `lilyplayer` binary in `./bin`
+This will generate the `lilyplayer` binary in `./build_dir_for_native_output`
 
-If you want to generate an appimage, you will also need the `wget`.
+If you want to generate an appimage, you will also need the `wget`, `readlink`, `dirname`.
 
 	sudo apt-get install wget
 
