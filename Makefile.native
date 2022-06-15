@@ -524,16 +524,47 @@ ${QT_CORE_LIB}: ${QT_OUTPUT_DIR}
 	    -no-guess-compiler \
 	    -c++std c++17 \
 	    -sse2 \
+	    -opengl desktop \
+	    -platform linux-g++ \
+	    -qt-libpng \
+	    -qt-libjpeg \
+	    -qt-freetype \
+	    -qt-harfbuzz \
+	    -qt-pcre \
+	    -xcb \
+	    -xkbcommon \
+	    -ccache \
+	    -no-cups \
+	    -no-gtk \
+	    -no-sql-db2 \
+	    -no-sql-ibase \
+	    -no-sql-mysql \
+	    -no-sql-oci \
+	    -no-sql-odbc \
+	    -no-sql-psql \
+	    -no-sql-sqlite \
+	    -qt-sqlite \
 	    -no-icu \
+	    -no-gif \
 	    -gui \
 	    -widgets \
 	    -no-dbus \
 	    -no-glib \
+	    -no-eglfs \
+	    -no-kms \
+	    -no-directfb \
+	    -no-linuxfb \
+	    -qpa xcb \
 	    -no-ssl \
 	    -no-pulseaudio \
 	    -no-alsa \
+	    -no-evr \
 	    -no-openssl \
+	    -nomake tests \
 	    -nomake examples \
+	    -nomake benchmarks \
+	    -nomake manual-tests \
+	    -nomake minimal-static-tests \
 	    -feature-thread \
 	    -opensource \
 	    -confirm-license \
