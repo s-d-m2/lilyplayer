@@ -21,13 +21,13 @@ Build dependencies
 `Lilyplayer` requires a C++14 compiler to build. (g++ 5.3 and clang++ 3.6.2 work both fine).
 It also depends on the following libraries:
 
-- [`Qt`][qt5]
+- [`Qt`][qt6]
 
-[qt5]: http://www.qt.io/
+[qt6]: http://www.qt.io/
 
 On `debian`, one can install them the following way:
 
-	sudo apt-get install libqt5widgets5 libqt5gui5 libqt5core5a qtbase5-dev qt5-qmake g++ libqt5svg5 libqt5svg5-dev \
+	sudo apt-get install qt6-base-dev qt6-base-dev-tools g++ libfluidsynth-dev \
 	  gawk sed autoconf libtool libasound2-dev
 
 Compiling instructions

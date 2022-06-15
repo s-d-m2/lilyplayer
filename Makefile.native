@@ -1,49 +1,46 @@
-QT_HOME := /home/sam/code/Qt/6.3.0
+RCC         = "/usr/lib/qt6/libexec/rcc"
+UIC         = "/usr/lib/qt6/libexec/uic"
+MOC         = "/usr/lib/qt6/libexec/moc"
 
-UIC := ${QT_HOME}/gcc_64/libexec/uic
-MOC := ${QT_HOME}/gcc_64/libexec/moc
-RCC := ${QT_HOME}/gcc_64/libexec/rcc
+QT_DEFINES  := -DQT_NO_DEBUG -D_REENTRANT -DQT_WIDGETS_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_SVG_LIB
+QT_INCLUDES := -isystem "/usr/include/x86_64-linux-gnu/qt6" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtSvg" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtCore" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtWidgets" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtSvgWidgets" \
+	       -isystem "/usr/include/x86_64-linux-gnu/qt6/QtGui"
+
+QT_LIBS     := /usr/lib/x86_64-linux-gnu/libQt6Svg.so \
+	       /usr/lib/x86_64-linux-gnu/libQt6Widgets.so \
+	       /usr/lib/x86_64-linux-gnu/libQt6Gui.so \
+	       /usr/lib/x86_64-linux-gnu/libQt6Core.so \
+	       /usr/lib/x86_64-linux-gnu/libQt6SvgWidgets.so \
+	       -lGL -lpthread
+
+SED := sed
+MKDIR := mkdir
+CP := cp
+RM := rm
 
 
 PROJECT_ROOT_DIR := $(shell realpath .)
+
+
 OUTPUT_DIR := ${PROJECT_ROOT_DIR}/build_dir_for_native_output
 TARGET := ${OUTPUT_DIR}/lilyplayer
 
 APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
 GENERATED_DIR := ${OUTPUT_DIR}/generated
-QT_OUTPUT_DIR := ${OUTPUT_DIR}/qt
 
-FLUIDSYNTH_LIB := ${OUTPUT_DIR}/libfluidsynth.a
-QT_CORE_LIB := ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Core.a
-
-SED := sed
-MKDIR := mkdir
-
-QT_DEFINES := -DQT_NO_DEBUG -D_REENTRANT -DQT_WIDGETS_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_SVG_LIB -DQT_STATICPLUGIN
-QT_INCLUDES := -isystem ${QT_OUTPUT_DIR}/qtbase/include\
-	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtSvgWidgets \
-	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtWidgets \
-	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtSvg \
-	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtGui \
-	       -isystem ${QT_OUTPUT_DIR}/qtbase/include/QtCore
-
-QT_DEP_LIBS := $(shell pkg-config --libs libpcre2-16 libpng libzstd harfbuzz)
-
-FLUIDSYNTH_INCLUDES := -isystem ${OUTPUT_DIR}/fluidsynth/include \
-	               -isystem ${PROJECT_ROOT_DIR}/3rd-party/fluidsynth/include
-
-FLUIDSYNTH_DEP_LIBS := $(shell pkg-config --libs libinstpatch-1.0 alsa dbus-1 jack sdl2 readline) \
-		        -lpulse -lpulse-simple
+FLUIDSYNTH_INCLUDES :=
+FLUIDSYNTH_LIBS := -lfluidsynth
 
 INCLUDES := ${QT_DEFINES} ${QT_INCLUDES} \
 	    ${FLUIDSYNTH_INCLUDES} \
 	    -I ${GENERATED_DIR}
 
-LIBS := -lGL \
-	-lpthread \
-	${QT_DEP_LIBS} \
-	${FLUIDSYNTH_DEP_LIBS} \
-	-lgomp
+LIBS := ${QT_LIBS} \
+	${FLUIDSYNTH_LIBS}
 
 APP_SRC := ${PROJECT_ROOT_DIR}/src/main.cc  \
 	   ${PROJECT_ROOT_DIR}/src/mainwindow.cc \
@@ -455,9 +452,6 @@ ${APP_OBJS_OUTPUT_DIR}: ${OUTPUT_DIR}
 ${OUTPUT_DIR}:
 	"${MKDIR}" -p "$@"
 
-${QT_OUTPUT_DIR}: ${OUTPUT_DIR}
-	"${MKDIR}" -p "$@"
-
 ${GENERATED_DIR}: ${OUTPUT_DIR}
 	"${MKDIR}" -p "$@"
 
@@ -466,14 +460,16 @@ define specific_flags
    $(if $(findstring moc_mainwindow.o,$(1)),-Wno-error,)
 endef
 
-${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
-	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -MD -c -o "$@" "$<"
-	# @cp $*.d $*.P; \
-	#    sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	#        -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	#    rm -f $*.d
+${APP_OBJS_OUTPUT_DIR}/mainwindow.o: ${UI_MAINWINDOW_HH}
 
-${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
+${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}
+	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -MD -c -o "$@" "$<"
+	${CP} ${APP_OBJS_OUTPUT_DIR}/$*.d ${APP_OBJS_OUTPUT_DIR}/$*.P; \
+	   ${SED} -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	       -e '/^$$/ d' -e 's/$$/ :/' < ${APP_OBJS_OUTPUT_DIR}/$*.d >> ${APP_OBJS_OUTPUT_DIR}/$*.P; \
+	   ${RM} -f ${APP_OBJS_OUTPUT_DIR}/$*.d
+
+${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc
 	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -c -o "$@" "$<"
 
 
@@ -486,6 +482,7 @@ ${UI_MAINWINDOW_HH}: ${PROJECT_ROOT_DIR}/src/mainwindow.ui | ${GENERATED_DIR}
 	"${UIC}" -o "$@" "$<"
 	"${SED}" -i '1i // Avoid warnings on generated headers\n#if !defined(__clang__)\n  #pragma GCC system_header\n#endif\n' "$@"
 	"${SED}" -i 's/^#include <mainwindow.h>$$/#include "mainwindow.hh"/' "$@"
+	"${SED}" -i 's/^#include <QtWidgets\/QAction>$$/#include <QtGui\/QAction>/' "$@"
 	"${SED}" -i 's/QObject::connect(\(.*\), MainWindow, qOverload<>(&QMainWindow::/QObject::connect(\1, reinterpret_cast<::MainWindow*>(MainWindow), qOverload<>(\&::MainWindow::/' "$@"
 
 ${MOC_FILE}:  ${PROJECT_ROOT_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
@@ -493,114 +490,12 @@ ${MOC_FILE}:  ${PROJECT_ROOT_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
 
 moc: ${MOC_FILE}
 
-${FLUIDSYNTH_LIB}: | ${OUTPUT_DIR}
-	set -eux ; \
-	if [ -e "$@" ] ; then \
-	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
-	else \
-	  "${MKDIR}" -p "${OUTPUT_DIR}/fluidsynth" || exit 1 ; \
-	  cmake -D CMAKE_BUILD_TYPE=Release \
-	        -D BUILD_SHARED_LIBS=off \
-	        -S "${PROJECT_ROOT_DIR}/3rd-party/fluidsynth/" \
-	        -B "${OUTPUT_DIR}/fluidsynth" ; \
-	  make -C "${OUTPUT_DIR}/fluidsynth"  V=1 VERBOSE=1 -j || exit 2 ; \
-	  FLUID_LIB="$$(find "${OUTPUT_DIR}/fluidsynth" -name 'libfluidsynth.a' | head -n 1)" ; \
-	  [ -f "$$FLUID_LIB" ] || exit 3 ; \
-	  cp -- "$$FLUID_LIB" "$@" || exit 4 ; \
-	fi
-
-${QT_CORE_LIB}: ${QT_OUTPUT_DIR}
-	if [ -e "$@" ] ; then \
-	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
-	else \
-	  cd "${PROJECT_ROOT_DIR}/3rd-party/qt5/" || exit 2 ; \
-	  "${PROJECT_ROOT_DIR}/3rd-party/qt5/init-repository"  \
-	    --module-subset=qtsvg,qtbase,qtimageformats \
-	    -f || exit 3 ; \
-	  cd "${PROJECT_ROOT_DIR}/3rd-party/qt5/" || exit 4 ; \
-	  "${PROJECT_ROOT_DIR}/3rd-party/qt5/configure" \
-	    -static \
-	    -release \
-	    -no-guess-compiler \
-	    -c++std c++17 \
-	    -sse2 \
-	    -opengl desktop \
-	    -platform linux-g++ \
-	    -qt-libpng \
-	    -qt-libjpeg \
-	    -qt-freetype \
-	    -qt-harfbuzz \
-	    -qt-pcre \
-	    -xcb \
-	    -xkbcommon \
-	    -ccache \
-	    -no-cups \
-	    -no-gtk \
-	    -no-sql-db2 \
-	    -no-sql-ibase \
-	    -no-sql-mysql \
-	    -no-sql-oci \
-	    -no-sql-odbc \
-	    -no-sql-psql \
-	    -no-sql-sqlite \
-	    -qt-sqlite \
-	    -no-icu \
-	    -no-gif \
-	    -gui \
-	    -widgets \
-	    -no-dbus \
-	    -no-glib \
-	    -no-eglfs \
-	    -no-kms \
-	    -no-directfb \
-	    -no-linuxfb \
-	    -qpa xcb \
-	    -no-ssl \
-	    -no-pulseaudio \
-	    -no-alsa \
-	    -no-evr \
-	    -no-openssl \
-	    -nomake tests \
-	    -nomake examples \
-	    -nomake benchmarks \
-	    -nomake manual-tests \
-	    -nomake minimal-static-tests \
-	    -feature-thread \
-	    -opensource \
-	    -confirm-license \
-	    -submodules qtgui,qtwidgets,qtsvg,qtbase \
-	    -cmake-generator Ninja \
-	    -- -B "${QT_OUTPUT_DIR}" || exit 5 ; \
-	  ninja --verbose -C "${QT_OUTPUT_DIR}" || exit 6 ; \
-	fi
-
-qt: ${QT_CORE_LIB}
-
-fluidsynth: ${FLUIDSYNTH_LIB}
-
-${TARGET}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ}
+${TARGET}: ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o "$@" \
 	  ${APP_OBJS} \
 	  ${MOC_OBJ} \
 	  ${RESOURCE_OBJ} \
-	  ${FLUIDSYNTH_LIB} \
-	  ${QT_OUTPUT_DIR}/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
-	  ${QT_OUTPUT_DIR}/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
-	  ${QT_OUTPUT_DIR}/qtbase/src/gui/CMakeFiles/Gui_resources_1.dir/.rcc/qrc_qpdf.cpp.o \
 	  ${LIBS} \
-	  ${QT_OUTPUT_DIR}/qtbase/plugins/generic/libqtuiotouchplugin.a \
-	  ${QT_OUTPUT_DIR}/qtbase/plugins/iconengines/libqsvgicon.a \
-	  ${QT_OUTPUT_DIR}/qtbase/plugins/imageformats/libqico.a \
-	  ${QT_OUTPUT_DIR}/qtbase/plugins/imageformats/libqjpeg.a \
-	  ${QT_OUTPUT_DIR}/qtbase/plugins/imageformats/libqsvg.a \
-	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6SvgWidgets.a \
-	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Svg.a \
-	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Widgets.a \
-	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6OpenGLWidgets.a \
-	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6OpenGL.a \
-	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Gui.a \
-	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Concurrent.a \
-	  ${QT_OUTPUT_DIR}/qtbase/lib/libQt6Core.a \
 	  -lstdc++
 
 
@@ -611,3 +506,5 @@ app: ${TARGET}
 
 clean:
 	[ -d "${OUTPUT_DIR}" ] && rm -rf "${OUTPUT_DIR}"
+
+-include $(APP_OBJS:%.o=$/%.P)
