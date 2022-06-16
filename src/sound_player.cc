@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <iostream>
 #include "sound_player.hh"
+#include "filename_to_catch.h"
 
 #ifdef __EMSCRIPTEN__
 #include <vector>
@@ -9,6 +10,12 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #endif
+
+
+extern "C" {
+  const char* const soundfile_filename = "Yamaha-Grand-Lite-v2.0.sf2";
+}
+
 
 #ifdef __EMSCRIPTEN__
 namespace {
@@ -45,7 +52,7 @@ SoundPlayer::SoundPlayer()
     throw std::runtime_error("Error: failed to create the synthesiser for fluidsynth");
   }
 
-  if (fluid_synth_sfload(synth.get(), "/tmp/Yamaha-Grand-Lite-v2.0.sf2", 1) == FLUID_FAILED) {
+  if (fluid_synth_sfload(synth.get(), soundfile_filename, 1) == FLUID_FAILED) {
     throw std::runtime_error("Error: failed to load the soundfont");
   }
 
