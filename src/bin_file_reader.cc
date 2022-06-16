@@ -298,7 +298,7 @@ static bin_song_t get_song_from_file(Readable& file)
     if (elt.has_svg_file_change())
     {
       const auto& this_sheet = res.svg_files[ elt.new_svg_file ];
-      current_first_line = get_first_svg_line(this_sheet.data);;
+      current_first_line = get_first_svg_line(this_sheet.data);
     }
 
     if (elt.has_cursor_pos_change())

@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <string.h>
 
@@ -11,6 +10,19 @@
 
 #include "filename_to_catch.h"
 #include <errno.h>
+
+// fluidsynth loads a soundfile from the filesystem. However, here we embed the soundfile
+// directly in the app. Therefore, let's wrap fopen such that when fluidsynth tries to
+// open the soundfile, we return a FILE* on the the buffer instead.
+// fluidsynth also checks if the file exists and is a regular file using g_file_test.
+// We also need to wrap that.
+
+#if defined(__clang__)
+// clang complains that names starting by __ like __real_fopen or starting by _ at global scope
+// like _binary_Yamaha_Grand_Lite_v2_0_sf2_start are reserved. We don't have the choice though,
+// these are the symbols we are looking for.
+#pragma clang diagnostic ignored "-Wreserved-identifier"
+#endif
 
 extern FILE* __real_fopen(const char *restrict pathname, const char *restrict mode);
 extern char _binary_Yamaha_Grand_Lite_v2_0_sf2_start;
@@ -122,6 +134,5 @@ gboolean __wrap_g_file_test(const gchar* filename, GFileTest cond_to_check) {
     return 1; // true
   } else {
     return __real_g_file_test(filename, cond_to_check);
-    return !!cond_to_check;
   }
 }
