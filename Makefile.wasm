@@ -1,12 +1,14 @@
-EMSDK_ROOT := /home/sam/code/emsdk
-QT_HOME := /home/sam/code/Qt/6.3.0
+EMSDK_ROOT ?= $(shell echo >&2 "ERROR: EMSDK_ROOT is not set at the top of the Makefile. Download it from "\
+	     "https://emscripten.org/docs/getting_started/downloads.html then set the EMSDK_ROOT variable to where you installed it. " \
+	     "Make sure $$EMSDK_ROOT contains upstream/emscripten/{emcc,em++,emcmake,emmake} under it" && false)
+QT_HOME ?= $(shell echo >&2 "ERROR: QT_HOME is not set. Download it from https://www.qt.io/download-open-source "\
+	     "then set the QT_HOME variable to where you installed it. Make sure to install Qt, Wasm and qtsharedtools" && false)
+
 
 EMCC := ${EMSDK_ROOT}/upstream/emscripten/emcc
 EMCXX := ${EMSDK_ROOT}/upstream/emscripten/em++
 EMCMAKE := ${EMSDK_ROOT}/upstream/emscripten/emcmake
 EMMAKE := ${EMSDK_ROOT}/upstream/emscripten/emmake
-
-WASM_QMAKE := ${QT_HOME}/wasm_32/bin/qmake
 
 UIC := ${QT_HOME}/gcc_64/libexec/uic
 MOC := ${QT_HOME}/gcc_64/libexec/moc
@@ -14,6 +16,10 @@ RCC := ${QT_HOME}/gcc_64/libexec/rcc
 
 SED := sed
 MKDIR := mkdir
+NINJA := ninja
+CP := cp
+CMAKE := cmake
+MAKE := make
 
 PROJECT_ROOT_DIR := $(shell realpath .)
 OUTPUT_DIR := ${PROJECT_ROOT_DIR}/build_dir_for_wasm_output
@@ -63,8 +69,8 @@ RC_FILE := ${PROJECT_ROOT_DIR}/qdarkstyle/style.qrc
 RESOURCE_CODE := ${OUTPUT_DIR}/generated/resources.cc
 RESOURCE_OBJ :=  ${OUTPUT_DIR}/generated/resources.o
 
-JS_PLUGIN_IMPORT_SRC := ${OUTPUT_DIR}/generated/lilyplayer.js_plugin_import.cpp
-JS_PLUGIN_IMPORT_OBJ := ${OUTPUT_DIR}/generated/lilyplayer.js_plugin_import.o
+JS_PLUGIN_IMPORT_SRC := ${PROJECT_ROOT_DIR}/src/lilyplayer.js_plugin_import.cpp
+JS_PLUGIN_IMPORT_OBJ := ${APP_OBJS_OUTPUT_DIR}/lilyplayer.js_plugin_import.o
 
 LILYPLAYER_JS := ${OUTPUT_DIR}/lilyplayer.js
 LILYPLAYER_HTML := ${OUTPUT_DIR}/lilyplayer.html
@@ -89,16 +95,16 @@ ${FLUIDSYNTH_LIB}: ${OUTPUT_DIR}
 	  cd "${EMSDK_ROOT}" || exit 3 ; \
 	  . "${EMSDK_ROOT}/emsdk_env.sh" || exit 4 ; \
 	  "${MKDIR}" -p "${OUTPUT_DIR}/fluidsynth-emscripten" || exit 5 ; \
-	  "${EMCMAKE}" cmake -Denable-oss=off \
+	  "${EMCMAKE}" "${CMAKE}" -Denable-oss=off \
 	                -D CMAKE_BUILD_TYPE=Release \
 	                -D BUILD_SHARED_LIBS=off \
 	                -D CMAKE_C_FLAGS=-D__EMSCRIPTEN_PTHREADS__=1 \
 	                -S "${PROJECT_ROOT_DIR}/3rd-party/fluidsynth-emscripten/" \
 	                -B "${OUTPUT_DIR}/fluidsynth-emscripten" ; \
-	  "${EMMAKE}" make -C "${OUTPUT_DIR}/fluidsynth-emscripten"  V=1 VERBOSE=1 -j || exit 6 ; \
+	  "${EMMAKE}" "${MAKE}" -C "${OUTPUT_DIR}/fluidsynth-emscripten"  V=1 VERBOSE=1 -j || exit 6 ; \
 	  FLUID_LIB="$$(find "${OUTPUT_DIR}/fluidsynth-emscripten" -name 'libfluidsynth.a' | head -n 1)" ; \
 	  [ -f "$$FLUID_LIB" ] || exit 7 ; \
-	  cp -- "$$FLUID_LIB" "$@" || exit 8 ; \
+	  "${CP}" -- "$$FLUID_LIB" "$@" || exit 8 ; \
 	fi
 
 
@@ -144,15 +150,23 @@ ${QT_CORE_LIB}: ${OUTPUT_DIR}
 	    -confirm-license \
 	    -submodules qtgui,qtwidgets,qtsvg,qtbase \
 	    -- -B "${OUTPUT_DIR}/qt" || exit 5 ; \
-	  ninja --verbose -C "${OUTPUT_DIR}/qt" || exit 6 ; \
+	  "${NINJA}" --verbose -C "${OUTPUT_DIR}/qt" || exit 6 ; \
 	fi
 
 qt: ${QT_CORE_LIB}
 
+/wasm_32/plugins/platforms/wasm_shell.html /wasm_32/plugins/platforms/qtloader.js /wasm_32/plugins/platforms/qtlogo.svg:
+	# if make executes this rules, it means it tried to build ${QT_HOME}/$@ where QT_HOME is empty.
+	echo >&2 "ERROR: QT_HOME is not set. Download it from https://www.qt.io/download-open-source " \
+	     	 "then set the QT_HOME variable to where you installed it. Make sure to install Qt, Wasm and qtsharedtools. " \
+		 "Tip: QT_HOME folder should contain $@ under it"
+	false
+
+
 ${LILYPLAYER_HTML}: ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg
 	"${SED}" -e 's/@APPNAME@/lilyplayer/g' ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html > "$@"
-	cp -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${OUTPUT_DIR}
-	cp -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
+	"${CP}" -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${OUTPUT_DIR}
+	"${CP}" -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
 
 loader: ${LILYPLAYER_HTML}
 
@@ -170,9 +184,6 @@ ${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
 
 resource: ${RESOURCE_OBJ}
 
-${JS_PLUGIN_IMPORT_SRC}: ${PROJECT_ROOT_DIR}/lilyplayer.pro | ${GENERATED_DIR}
-	${WASM_QMAKE} -o ${OUTPUT_DIR}/generated "$<"
-
 ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
 	${EMCXX} ${CXXFLAGS} ${INCLUDES} -c -o "$@" "$<"
 
@@ -180,6 +191,7 @@ js_plugin_import: ${JS_PLUGIN_IMPORT_OBJ}
 
 ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT_OBJ} ${LILYPLAYER_HTML}
 	${EMCC} \
+	  -flto=full \
 	  -pthread \
 	  -s ASYNCIFY=0 \
 	  -s ERROR_ON_UNDEFINED_SYMBOLS=1 \

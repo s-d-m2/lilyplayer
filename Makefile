@@ -1,11 +1,12 @@
 all lilyplayer:
-	${MAKE} -C ./src "$@"
+	${MAKE} -f Makefile.native "$@"
 
 wasm:
-	./make_wasm.sh
+	${MAKE} -f Makefile.wasm "$@"
 
 clean:
-	${MAKE} -C ./src "$@"
+	${MAKE} -f Makefile.native "$@"
+	${MAKE} -f Makefile.wasm "$@"
 
 install:
 	./make-install.sh ${DESTDIR}
@@ -13,4 +14,4 @@ install:
 appimage: lilyplayer
 	./make-appimage.sh
 
-.PHONY: all lilyplayer clean appimage install
+.PHONY: all lilyplayer clean appimage install wasm

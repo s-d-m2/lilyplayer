@@ -9,27 +9,56 @@ Build dependencies
 
 # Qt with Wasm
 
-`Lilyplayer` is based on the [Qt](https://qt.io) library and requires a prebuilt version supporting wasm. Versions 5.15
-and above should be fine. In these instructions, I'll use version 6.3.0 as an example.
+`Lilyplayer` is based on the [Qt](https://qt.io) and requires a host compiler. Download Qt from
+https://www.qt.io/download-open-source . Make sure qt select Qt >= 6.3, Wasm and Qtsharedtools at
+installation.
 
-Download a version of Qt at https://www.qt.io/download and select the `WebAssembly` as part of the components to install.
-Choose a folder where to install, for example `/home/<username>/Qt`.
-
-Set the path to QT in the `make_wasm.sh` file at the top and also the version.
+Then set and export the QT\_HOME variable to where you installed it. $QT\_HOME must contain
+`gcc_64/libexec/uic`
 
 # Emscripten compiler
 
 To compile to WebAssembly, you will need an Emscripten compiler.
 Follow the instructions at `https://emscripten.org/docs/getting_started/downloads.html`
 
-Set the path to the emscripten folder at the top of `make_wasm.sh`
+Don't forget to run:
+```
+"/path/to/where/you/downloaded/emscripten/emsdk" activate
+. "/path/to/where/you/downloaded/emscripten/emsdk_env.sh"
+```
+
+Ultimately, you will need to export the EMSDK\_ROOT environment variable to the root of where you downloaded it.
+$EMSDK\_ROOT must contain `upstream/emscripten/{emcc,em++,emcmake,emmake}` in there.
+
+# Other build dependencies
+
+On top of the above mentioned dependencies, the following programs are also required to build lilyplayer for webassembly:
+
+- sed
+- ninja
+- cmake
+- cp
+- mkdir
+- make
+
+On `debian`, you can install these using:
+
+	sudo apt-get install sed ninja cmake coreutils make
+
 
 Compiling
 ---
 
-Now, simply run `./make_wasm.sh`. The generated html page should appear in the `build_dir_for_wasm_target` folder.
+Once all the dependencies have been installed, and the environment variables have been exported,
+you can simply compile `lilyplayer` by entering:
+
+	git clone --recursive 'https://github.com/s-d-m/lilyplayer'
+	cd lilyplayer
+	make -f Makefile.wasm
+
+The generated html page should appear in the `build_dir_for_wasm_target` folder.
 
 Opening the app
 ---
 
-To open it, run `emrun --browser="${BROWSER}" ./build_dir_for_wasm_target/lilyplayer.html
+To open it, run `emrun --browser="${BROWSER}" ./build_dir_for_wasm_target/lilyplayer.html`
