@@ -6,8 +6,6 @@ EMCXX := ${EMSDK_ROOT}/upstream/emscripten/em++
 EMCMAKE := ${EMSDK_ROOT}/upstream/emscripten/emcmake
 EMMAKE := ${EMSDK_ROOT}/upstream/emscripten/emmake
 
-WASM_QMAKE := ${QT_HOME}/wasm_32/bin/qmake
-
 UIC := ${QT_HOME}/gcc_64/libexec/uic
 MOC := ${QT_HOME}/gcc_64/libexec/moc
 RCC := ${QT_HOME}/gcc_64/libexec/rcc
@@ -63,8 +61,8 @@ RC_FILE := ${PROJECT_ROOT_DIR}/qdarkstyle/style.qrc
 RESOURCE_CODE := ${OUTPUT_DIR}/generated/resources.cc
 RESOURCE_OBJ :=  ${OUTPUT_DIR}/generated/resources.o
 
-JS_PLUGIN_IMPORT_SRC := ${OUTPUT_DIR}/generated/lilyplayer.js_plugin_import.cpp
-JS_PLUGIN_IMPORT_OBJ := ${OUTPUT_DIR}/generated/lilyplayer.js_plugin_import.o
+JS_PLUGIN_IMPORT_SRC := ${PROJECT_ROOT_DIR}/src/lilyplayer.js_plugin_import.cpp
+JS_PLUGIN_IMPORT_OBJ := ${APP_OBJS_OUTPUT_DIR}/lilyplayer.js_plugin_import.o
 
 LILYPLAYER_JS := ${OUTPUT_DIR}/lilyplayer.js
 LILYPLAYER_HTML := ${OUTPUT_DIR}/lilyplayer.html
@@ -170,9 +168,6 @@ ${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
 
 resource: ${RESOURCE_OBJ}
 
-${JS_PLUGIN_IMPORT_SRC}: ${PROJECT_ROOT_DIR}/lilyplayer.pro | ${GENERATED_DIR}
-	${WASM_QMAKE} -o ${OUTPUT_DIR}/generated "$<"
-
 ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
 	${EMCXX} ${CXXFLAGS} ${INCLUDES} -c -o "$@" "$<"
 
@@ -180,6 +175,7 @@ js_plugin_import: ${JS_PLUGIN_IMPORT_OBJ}
 
 ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT_OBJ} ${LILYPLAYER_HTML}
 	${EMCC} \
+	  -flto=full \
 	  -pthread \
 	  -s ASYNCIFY=0 \
 	  -s ERROR_ON_UNDEFINED_SYMBOLS=1 \
