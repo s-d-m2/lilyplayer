@@ -230,7 +230,7 @@ ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_H
 	  ${OUTPUT_DIR}/qt/qtbase/src/plugins/platforms/wasm/CMakeFiles/QWasmIntegrationPlugin_resources_1.dir/.rcc/qrc_wasmfonts.cpp.o \
 	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
 	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
-	  --embed-file ${PROJECT_ROOT_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2@/tmp/Yamaha-Grand-Lite-v2.0.sf2
+	  --embed-file ${PROJECT_ROOT_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2@Yamaha-Grand-Lite-v2.0.sf2
 
 app: ${LILYPLAYER_JS}
 

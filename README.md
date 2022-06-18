@@ -30,7 +30,8 @@ It also depends on the following libraries:
 On `debian`, one can install the build dependencies the following way:
 
 	sudo apt-get install qt6-base-dev qt6-base-dev-tools libqt6svg6-dev  g++ libfluidsynth-dev \
-	  gawk sed coreutils
+	  gawk sed coreutils pkg-config libinstpatch-dev libdbus-1-dev libjack-dev libsdl2-dev \
+	  cmake findutils libgomp1
 
 Compiling instructions
 -------------------
