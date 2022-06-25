@@ -10,6 +10,18 @@ make it executable and then simply run it.
 You can also download [premade music sheets](https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer) and play them with
 lilyplayer.
 
+Web demo
+----
+
+You can see lilyplayer in action directly in your browser at https://lilyplayer-web.shuttleapp.rs/
+
+It takes some time to load as it downloads about 50MiB at the start.
+
+Once loaded, click, "input", then "select file". Suitable files for the application are available at
+https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer . Simply download music sheets you like
+from there.
+
+
 Building instructions for Web Assembly
 -----------------
 
