@@ -98,8 +98,6 @@ class MainWindow : public QMainWindow
     SoundListener sound_listener_via_fluidsynth;
 
     std::chrono::time_point<std::chrono::steady_clock> ts_at_cur_event;
-    std::string selected_input_port = "";
-
 
     unsigned int start_pos = INVALID_SONG_POS;
     unsigned int stop_pos = INVALID_SONG_POS;

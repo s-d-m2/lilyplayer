@@ -303,7 +303,6 @@ void MainWindow::play_song(bin_song_t input_song)
     this->ui->stop_measure->setValue(max_measure);
 
     this->song_pos = this->start_pos;
-    this->selected_input_port.clear();
 
     const auto nb_svg = song.svg_files.size();
     if (rendered_sheets.size() != 0)
