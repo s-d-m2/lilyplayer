@@ -58,7 +58,7 @@ APP_SRC := ${PROJECT_ROOT_DIR}/src/main.cc  \
 	   ${PROJECT_ROOT_DIR}/src/sound_listener.cc
 
 WRAPPER_SRC := ${PROJECT_ROOT_DIR}/src/fopen_wrapper.c
-WRAPPER_OBJ := ${WRAPPER_SRC:${PROJECT_ROOT_DIR}/src/%.c=${APP_OBJS_OUTPUT_DIR}/%.o}
+WRAPPER_OBJ := ${APP_OBJS_OUTPUT_DIR}/fopen_wrapper.o
 
 SOUNDFILE_SRC := ${PROJECT_ROOT_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2
 SOUNDFILE_OBJ := ${APP_OBJS_OUTPUT_DIR}/soundfile.o
@@ -476,17 +476,17 @@ ${APP_OBJS_OUTPUT_DIR}/mainwindow.o: ${UI_MAINWINDOW_HH}
 
 ${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB}
 	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -MD -c -o "$@" "$<"
-	${CP} ${APP_OBJS_OUTPUT_DIR}/$*.d ${APP_OBJS_OUTPUT_DIR}/$*.P; \
+	${CP} -- ${APP_OBJS_OUTPUT_DIR}/$*.d ${APP_OBJS_OUTPUT_DIR}/$*.P; \
 	   ${SED} -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	       -e '/^$$/ d' -e 's/$$/ :/' < ${APP_OBJS_OUTPUT_DIR}/$*.d >> ${APP_OBJS_OUTPUT_DIR}/$*.P; \
 	   ${RM} -f ${APP_OBJS_OUTPUT_DIR}/$*.d
 
 ${WRAPPER_OBJ}: ${WRAPPER_SRC} | ${APP_OBJS_OUTPUT_DIR}
 	${CC} ${CFLAGS} -O0 -ggdb3 $(shell pkg-config --cflags glib-2.0 | sed 's/-I/-isystem/') -Wno-error=padded -MD -c -o "$@" "$<"
-	${CP} ${APP_OBJS_OUTPUT_DIR}/$*.d ${APP_OBJS_OUTPUT_DIR}/$*.P; \
+	${CP} -- ${WRAPPER_OBJ:%.o=%.d} ${WRAPPER_OBJ:%.o=%.P} ; \
 	   ${SED} -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	       -e '/^$$/ d' -e 's/$$/ :/' < ${APP_OBJS_OUTPUT_DIR}/$*.d >> ${APP_OBJS_OUTPUT_DIR}/$*.P; \
-	   ${RM} -f ${APP_OBJS_OUTPUT_DIR}/$*.d
+	       -e '/^$$/ d' -e 's/$$/ :/' < ${WRAPPER_OBJ:%.o=%.d} >> ${WRAPPER_OBJ:%.o=%.P} ; \
+	   ${RM} -f ${WRAPPER_OBJ:%.o=%.d}
 
 ${SOUNDFILE_OBJ}: ${SOUNDFILE_SRC}
 	cd ${PROJECT_ROOT_DIR}/misc && ld -r -b binary -o $@ ${SOUNDFILE_SRC:${PROJECT_ROOT_DIR}/misc/%=%}
