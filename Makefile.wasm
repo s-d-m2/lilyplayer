@@ -20,13 +20,20 @@ NINJA := ninja
 CP := cp
 CMAKE := cmake
 MAKE := make
+CAT := cat
+BASE64 := base64
+ECHO := echo
 
 PROJECT_ROOT_DIR := $(shell realpath .)
 OUTPUT_DIR := ${PROJECT_ROOT_DIR}/build_dir_for_wasm_output
 
 APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
-
 GENERATED_DIR := ${OUTPUT_DIR}/generated
+
+FUER_ELISE_SRC := ${PROJECT_ROOT_DIR}/misc/fur_Elise.bin
+PRELIDIUM_1_SRC := ${PROJECT_ROOT_DIR}/misc/BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin
+CHOPIN_SRC := ${PROJECT_ROOT_DIR}/misc/ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin
+
 UI_MAINWINDOW_HH := ${GENERATED_DIR}/ui_mainwindow.hh
 MOC_FILE := ${GENERATED_DIR}/moc_mainwindow.cc
 MOC_OBJ := ${GENERATED_DIR}/moc_mainwindow.o
@@ -242,7 +249,18 @@ ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_H
 	  ${OUTPUT_DIR}/qt/qtbase/src/plugins/platforms/wasm/CMakeFiles/QWasmIntegrationPlugin_resources_1.dir/.rcc/qrc_wasmfonts.cpp.o \
 	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_1.dir/.rcc/qrc_qstyle.cpp.o \
 	  ${OUTPUT_DIR}/qt/qtbase/src/widgets/CMakeFiles/Widgets_resources_3.dir/.rcc/qrc_qmessagebox.cpp.o \
-	  --embed-file ${PROJECT_ROOT_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2@Yamaha-Grand-Lite-v2.0.sf2
+	  --embed-file ${PROJECT_ROOT_DIR}/misc/Yamaha-Grand-Lite-v2.0.sf2@Yamaha-Grand-Lite-v2.0.sf2 \
+	  --embed-file ${PROJECT_ROOT_DIR}/misc/fur_Elise.bin@fur_Elise.bin \
+	  --embed-file ${PROJECT_ROOT_DIR}/misc/BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin@BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin \
+	  --embed-file ${PROJECT_ROOT_DIR}/misc/ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin@ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin
+	${CAT} ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.head > ${OUTPUT_DIR}/lilyplayer.html
+	${ECHO} -n "	var emscriptenModuleSource = atob('" >> ${OUTPUT_DIR}/lilyplayer.html
+	${BASE64} --wrap=0 ${OUTPUT_DIR}/lilyplayer.js >> ${OUTPUT_DIR}/lilyplayer.html
+	${ECHO} "');" >> ${OUTPUT_DIR}/lilyplayer.html
+	${ECHO} -n "	var data = _base64ToArrayBuffer('" >> ${OUTPUT_DIR}/lilyplayer.html
+	${BASE64} --wrap=0 ${OUTPUT_DIR}/lilyplayer.wasm >> ${OUTPUT_DIR}/lilyplayer.html
+	${ECHO} "');" >> ${OUTPUT_DIR}/lilyplayer.html
+	${CAT} ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.tail >> ${OUTPUT_DIR}/lilyplayer.html
 
 app: ${LILYPLAYER_JS}
 

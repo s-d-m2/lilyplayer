@@ -258,6 +258,15 @@ void MainWindow::open_file(const std::string& filename)
   }
 }
 
+void MainWindow::open_file(const std::string_view& file_data)
+{
+  try {
+    auto input_song = get_song(file_data);
+    this->play_song(std::move(input_song));
+  } catch (...) {
+  }
+}
+
 void MainWindow::play_song(bin_song_t input_song)
 {
   try
@@ -340,11 +349,7 @@ void MainWindow::play_song(bin_song_t input_song)
 void MainWindow::open_file()
 {
   load_from_wasm(".bin, .*, *", [=](const std::string_view file_content) {
-    try {
-      auto input_song = get_song(file_content);
-      this->play_song(std::move(input_song));
-    } catch (...) {
-    }
+    this->open_file(file_content);
   });
 }
 #else
@@ -446,31 +451,48 @@ void MainWindow::input_change()
   this->clear_music_scheet();
 }
 
-void MainWindow::update_input_entries()
-{
-  // find out which input is currently selected
-  auto menu_input = ui->menuInput;
+void MainWindow::play_fuer_Elise__Beethoven() {
+#if defined(__wasm)
+  open_file(std::string{"fur_Elise.bin"});
+#else
+  extern char _binary_fur_Elise_bin_start;
+  extern char _binary_fur_Elise_bin_end;
 
-  // remove all the children!
-  menu_input->clear();
-
-  // find the action group.
-  auto action_group = menu_input->findChild<QActionGroup*>("",
-							   Qt::FindDirectChildrenOnly);
-  if (action_group == nullptr)
-  {
-    action_group = new QActionGroup( menu_input );
-  }
-
-  {
-    // add the file entry in the input menu.
-    auto button = menu_input->addAction("select file");
-
-    button->setActionGroup(action_group);
-    connect(button, SIGNAL(triggered()), this, SLOT(open_file()));
-  }
+  play_song(&_binary_fur_Elise_bin_start, &_binary_fur_Elise_bin_end);
+#endif
 }
 
+void MainWindow::play_Prelidium_1__Bach() {
+#if defined(__wasm)
+  open_file(std::string{"BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin"});
+#else
+  extern char _binary_BachJS_BWV846_wtk1_prelude1_wtk1_prelude1_bin_start;
+  extern char _binary_BachJS_BWV846_wtk1_prelude1_wtk1_prelude1_bin_end;
+
+  play_song(&_binary_BachJS_BWV846_wtk1_prelude1_wtk1_prelude1_bin_start,
+	    &_binary_BachJS_BWV846_wtk1_prelude1_wtk1_prelude1_bin_end);
+#endif
+}
+
+void MainWindow::play_Etude_As_dur__Chopin() {
+#if defined(__wasm)
+  open_file(std::string{"ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin"});
+#else
+  extern char _binary_ChopinFF_O25_chopin_op_25_01_chopin_op_25_01_bin_start;
+  extern char _binary_ChopinFF_O25_chopin_op_25_01_chopin_op_25_01_bin_end;
+
+  play_song(&_binary_ChopinFF_O25_chopin_op_25_01_chopin_op_25_01_bin_start,
+	    &_binary_ChopinFF_O25_chopin_op_25_01_chopin_op_25_01_bin_end);
+#endif
+}
+
+void MainWindow::play_song(const char* data_start, const char* data_end) {
+  const auto size = static_cast<size_t>(data_end - data_start);
+  const auto song_content = std::string_view(data_start, size);
+
+  open_file(song_content);
+
+}
 
 #if !defined(__clang__)
   #pragma GCC diagnostic push
@@ -501,16 +523,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   connect(&signal_checker_timer, SIGNAL(timeout()), this, SLOT(look_for_signals_change()));
   signal_checker_timer.start(100 /* ms */);
-
-  {
-    // setting up the signal on_input_menu_clicked->update_input_entries. Update_input_entries fills up
-    // the input menu with the available entries
-    // an important difference between the input_menu and the output_menu is that the input is not necessary
-    // a midi input port. It can be a file. And therefore, if there is no midi inputs detected, it's not a problem.
-    // and also, there is no need to automatically select an input port.
-    auto menu_input = ui->menuInput;
-    connect(menu_input, SIGNAL(aboutToShow()), this, SLOT(update_input_entries()));
-  }
 
   {
     qRegisterMetaType<std::vector<unsigned char>>("std::vector<unsigned char>");

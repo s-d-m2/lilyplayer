@@ -2,7 +2,7 @@ all lilyplayer:
 	${MAKE} -f Makefile.native "$@"
 
 wasm:
-	${MAKE} -f Makefile.wasm "$@"
+	${MAKE} -f Makefile.wasm "all"
 
 clean:
 	${MAKE} -f Makefile.native "$@"
