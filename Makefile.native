@@ -33,6 +33,15 @@ TARGET := ${OUTPUT_DIR}/lilyplayer
 APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
 GENERATED_DIR := ${OUTPUT_DIR}/generated
 
+FUER_ELISE_SRC := ${PROJECT_ROOT_DIR}/misc/fur_Elise.bin
+FUER_ELISE_OBJ := ${GENERATED_DIR}/fuer_Elise.o
+
+PRELIDIUM_1_SRC := ${PROJECT_ROOT_DIR}/misc/BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin
+PRELIDIUM_1_OBJ := ${GENERATED_DIR}/BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.o
+
+CHOPIN_SRC := ${PROJECT_ROOT_DIR}/misc/ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin
+CHOPIN_OBJ := ${GENERATED_DIR}/ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.o
+
 FLUIDSYNTH_LIB := ${OUTPUT_DIR}/libfluidsynth.a
 FLUIDSYNTH_INCLUDES := -isystem ${OUTPUT_DIR}/fluidsynth/include \
                        -isystem ${PROJECT_ROOT_DIR}/3rd-party/fluidsynth/include
@@ -491,6 +500,15 @@ ${WRAPPER_OBJ}: ${WRAPPER_SRC} | ${APP_OBJS_OUTPUT_DIR}
 ${SOUNDFILE_OBJ}: ${SOUNDFILE_SRC}
 	cd ${PROJECT_ROOT_DIR}/misc && ld -r -b binary -o $@ ${SOUNDFILE_SRC:${PROJECT_ROOT_DIR}/misc/%=%}
 
+${FUER_ELISE_OBJ}: ${FUER_ELISE_SRC}
+	cd ${PROJECT_ROOT_DIR}/misc && ld -r -b binary -o $@ ${FUER_ELISE_SRC:${PROJECT_ROOT_DIR}/misc/%=%}
+
+${PRELIDIUM_1_OBJ}: ${PRELIDIUM_1_SRC}
+	cd ${PROJECT_ROOT_DIR}/misc && ld -r -b binary -o $@ ${PRELIDIUM_1_SRC:${PROJECT_ROOT_DIR}/misc/%=%}
+
+${CHOPIN_OBJ}: ${CHOPIN_SRC}
+	cd ${PROJECT_ROOT_DIR}/misc && ld -r -b binary -o $@ ${CHOPIN_SRC:${PROJECT_ROOT_DIR}/misc/%=%}
+
 soundfile: ${SOUNDFILE_OBJ}
 
 ${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc
@@ -532,7 +550,7 @@ ${FLUIDSYNTH_LIB}: | ${OUTPUT_DIR}
 
 fluidsynth: ${FLUIDSYNTH_LIB}
 
-${TARGET}: ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${WRAPPER_OBJ} ${SOUNDFILE_OBJ}
+${TARGET}: ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${WRAPPER_OBJ} ${SOUNDFILE_OBJ} ${FUER_ELISE_OBJ} ${PRELIDIUM_1_OBJ} ${CHOPIN_OBJ}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o "$@" \
 	  -Wl,--wrap=fopen \
 	  -Wl,--wrap=g_file_test \
@@ -542,10 +560,11 @@ ${TARGET}: ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOUR
 	  ${MOC_OBJ} \
 	  ${RESOURCE_OBJ} \
 	  ${FLUIDSYNTH_LIB} \
+	  ${FUER_ELISE_OBJ} \
+	  ${PRELIDIUM_1_OBJ} \
+	  ${CHOPIN_OBJ} \
 	  ${LIBS} \
 	  -lstdc++
-
-
 
 app: ${TARGET}
 

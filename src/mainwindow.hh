@@ -39,7 +39,7 @@ class MainWindow : public QMainWindow
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void open_file(const std::string& filename);
-
+    void open_file(const std::string_view& file_data);
     void process_keyboard_event(const std::vector<key_down>& keys_down,
 				const std::vector<key_up>& keys_up,
 				const std::vector<midi_message_t>& messages);
@@ -48,6 +48,7 @@ class MainWindow : public QMainWindow
     void pause_music();
     void stop_song();
     void play_song(bin_song_t input_song);
+    void play_song(const char* data_start, const char* data_end);
     void clear_music_scheet();
     void process_music_sheet_event(const music_sheet_event& keys_event);
     void display_music_sheet(const unsigned music_sheet_pos);
@@ -58,12 +59,14 @@ class MainWindow : public QMainWindow
 
   public slots:
     void open_file(); // open the window dialog to select a file
+    void play_fuer_Elise__Beethoven();
+    void play_Prelidium_1__Bach();
+    void play_Etude_As_dur__Chopin();
 
   private slots:
     void song_event_loop();
     void replay();
     void look_for_signals_change();
-    void update_input_entries();
     void input_change();
     void handle_input_midi(const std::vector<unsigned char> bytes);
     void sub_sequence_click();
