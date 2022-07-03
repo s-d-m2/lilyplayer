@@ -80,20 +80,22 @@ JS_PLUGIN_IMPORT_SRC := ${PROJECT_ROOT_DIR}/src/lilyplayer.js_plugin_import.cpp
 JS_PLUGIN_IMPORT_OBJ := ${APP_OBJS_OUTPUT_DIR}/lilyplayer.js_plugin_import.o
 
 LILYPLAYER_JS := ${OUTPUT_DIR}/lilyplayer.js
-LILYPLAYER_HTML := ${OUTPUT_DIR}/lilyplayer.html
+LILYPLAYER_FINAL_HTML :=  ${OUTPUT_DIR}/lilyplayer.html
+
+# LILYPLAYER_HTML :=
 
 all: app
 
-${APP_OBJS_OUTPUT_DIR}: ${OUTPUT_DIR}
+${APP_OBJS_OUTPUT_DIR}: | ${OUTPUT_DIR}
 	"${MKDIR}" -p "$@"
 
 ${OUTPUT_DIR}:
 	"${MKDIR}" -p "$@"
 
-${GENERATED_DIR}: ${OUTPUT_DIR}
+${GENERATED_DIR}: | ${OUTPUT_DIR}
 	"${MKDIR}" -p "$@"
 
-${FLUIDSYNTH_LIB}: ${OUTPUT_DIR}
+${FLUIDSYNTH_LIB}: | ${OUTPUT_DIR}
 	set -eux ; \
 	if [ -e "$@" ] ; then \
 	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
@@ -128,7 +130,7 @@ ${MOC_FILE}:  ${PROJECT_ROOT_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
 	"${MOC}" -o "$@" "$<"
 
 
-${QT_CORE_LIB}: ${OUTPUT_DIR}
+${QT_CORE_LIB}: | ${OUTPUT_DIR}
 	if [ -e "$@" ] ; then \
 	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
 	else \
@@ -170,10 +172,10 @@ qt: ${QT_CORE_LIB}
 	false
 
 
-${LILYPLAYER_HTML}: ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg
-	"${SED}" -e 's/@APPNAME@/lilyplayer/g' ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html > "$@"
-	"${CP}" -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${OUTPUT_DIR}
-	"${CP}" -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
+# ${LILYPLAYER_HTML}: ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg
+# 	"${SED}" -e 's/@APPNAME@/lilyplayer/g' ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html > "$@"
+# 	"${CP}" -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${OUTPUT_DIR}
+# 	"${CP}" -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
 
 loader: ${LILYPLAYER_HTML}
 
@@ -196,7 +198,7 @@ ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB
 
 js_plugin_import: ${JS_PLUGIN_IMPORT_OBJ}
 
-${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT_OBJ} ${LILYPLAYER_HTML}
+${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT_OBJ}
 	${EMCC} \
 	  -flto=full \
 	  -pthread \
@@ -253,6 +255,8 @@ ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_H
 	  --embed-file ${PROJECT_ROOT_DIR}/misc/fur_Elise.bin@fur_Elise.bin \
 	  --embed-file ${PROJECT_ROOT_DIR}/misc/BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin@BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin \
 	  --embed-file ${PROJECT_ROOT_DIR}/misc/ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin@ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin
+
+${LILYPLAYER_FINAL_HTML}: ${LILYPLAYER_JS} ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.head ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.tail
 	${CAT} ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.head > ${OUTPUT_DIR}/lilyplayer.html
 	${ECHO} -n "	var emscriptenModuleSource = atob('" >> ${OUTPUT_DIR}/lilyplayer.html
 	${BASE64} --wrap=0 ${OUTPUT_DIR}/lilyplayer.js >> ${OUTPUT_DIR}/lilyplayer.html
@@ -262,7 +266,8 @@ ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_H
 	${ECHO} "');" >> ${OUTPUT_DIR}/lilyplayer.html
 	${CAT} ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.tail >> ${OUTPUT_DIR}/lilyplayer.html
 
-app: ${LILYPLAYER_JS}
+
+app: ${LILYPLAYER_FINAL_HTML}
 
 clean:
 	[ -d "${OUTPUT_DIR}" ] && rm -rf "${OUTPUT_DIR}"

@@ -408,25 +408,25 @@ function QtLoader(config)
     }
 
     function _base64ToArrayBuffer(base64) {
-	console.log("in _base64ToArrayBuffer base64 has type " + typeof(base64));
+//		console.log("in _base64ToArrayBuffer base64 has type " + typeof(base64));
     var binary_string = window.atob(base64);
-	console.log("in _base64ToArrayBuffer binary_string has type " + typeof(binary_string));
+//	console.log("in _base64ToArrayBuffer binary_string has type " + typeof(binary_string));
 
 	var len = binary_string.length;
 //    var bytes = new Uint8Array(len);
 	var bytes = new ArrayBuffer(len);
 	var bytes2 = new Uint8Array(bytes);
-   console.log("in _base64ToArrayBuffer bytes has type " + typeof(bytes));
-   console.log("in _base64ToArrayBuffer bytes2 has type " + typeof(bytes2));
+   // console.log("in _base64ToArrayBuffer bytes has type " + typeof(bytes));
+   // console.log("in _base64ToArrayBuffer bytes2 has type " + typeof(bytes2));
 	for (var i = 0; i < len; i++) {
             bytes2[i] = binary_string.charCodeAt(i);
 	}
-	   console.log("in _base64ToArrayBuffer bytes.buffer has type " + typeof(bytes.buffer));
+	//    console.log("in _base64ToArrayBuffer bytes.buffer has type " + typeof(bytes.buffer));
 
-	for (var i = 0; i < 20; i++) {
-            console.log("bytes2[" + i + "] = " + bytes2[i]);
-	}
-	console.log("len array is " + bytes2.length);
+	// for (var i = 0; i < 20; i++) {
+        //     console.log("bytes2[" + i + "] = " + bytes2[i]);
+	// }
+	// console.log("len array is " + bytes2.length);
 
     return bytes2;
 }
