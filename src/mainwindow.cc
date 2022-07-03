@@ -87,7 +87,6 @@ void MainWindow::process_keyboard_event(const std::vector<key_down>& keys_down,
   }
 
   update_keyboard(keys_down, keys_up, this->keyboard);
-  this->update();
 }
 
 void MainWindow::display_music_sheet(const unsigned music_sheet_pos)
@@ -138,10 +137,13 @@ void MainWindow::process_music_sheet_event(const music_sheet_event& event)
   // process the keyboard event. Must have one.
   this->process_keyboard_event(event.keys_down, event.keys_up, event.midi_messages);
 
+  bool update_required = false;
+
   // is there a svg file change?
   if (event.has_svg_file_change())
   {
     display_music_sheet(event.new_svg_file);
+    update_required = true;
   }
 
   // is there a cursor pos change here?
@@ -164,6 +166,11 @@ void MainWindow::process_music_sheet_event(const music_sheet_event& event)
 				       to_scene_y(3 * half_cursor_box_height)};
 
     this->ui->music_sheet->setSceneRect(rect_to_center);
+    update_required = true;
+  }
+
+  if (update_required) {
+    this->update();
   }
 }
 
