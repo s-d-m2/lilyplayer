@@ -169,6 +169,7 @@ void MainWindow::process_music_sheet_event(const music_sheet_event& event)
 
 void MainWindow::song_event_loop()
 {
+  this->ts_at_cur_event = std::chrono::steady_clock::now();
   if (is_in_pause or (song_pos == INVALID_SONG_POS))
   {
     QTimer::singleShot(100, this, SLOT(song_event_loop()));
@@ -189,10 +190,28 @@ void MainWindow::song_event_loop()
 
   process_music_sheet_event( song.events[song_pos] );
 
-  const auto time_to_wait = static_cast<int>(song.events[song_pos].time);
+
+
+  std::chrono::nanoseconds time_to_wait;
+  if (song_pos < song.nb_events)
+  {
+    const std::chrono::nanoseconds interval_between_two_events {
+      (song.events[song_pos + 1].time - song.events[song_pos].time) };
+
+    const std::chrono::nanoseconds time_to_process_cur_event =
+      std::chrono::steady_clock::now() - this->ts_at_cur_event;
+
+    std::cout << " It took " << time_to_process_cur_event.count() << " ns to process one event!!!\n";
+
+    time_to_wait = std::max(interval_between_two_events - time_to_process_cur_event, std::chrono::nanoseconds{0});
+  }
+  else
+  {
+    time_to_wait = std::chrono::seconds{3}; // wait 3s after last event
+  }
+
   song_pos++;
-  QTimer::singleShot(time_to_wait, this, SLOT(song_event_loop()));
-  return;
+  QTimer::singleShot(std::chrono::duration_cast<std::chrono::milliseconds>(time_to_wait), this, SLOT(song_event_loop()));
 }
 
 void MainWindow::clear_music_scheet()
@@ -226,7 +245,6 @@ void MainWindow::clear_music_scheet()
 void MainWindow::pause_music()
 {
   this->is_in_pause = true;
-
 
   sound_player.all_notes_off();
 }
@@ -283,16 +301,6 @@ void MainWindow::play_song(bin_song_t input_song)
     this->ui->stop_measure->setMinimum(1);
     this->ui->stop_measure->setMaximum(max_measure);
     this->ui->stop_measure->setValue(max_measure);
-
-    // compute waiting time
-    for (unsigned i = 0; i + 1 < song.nb_events; ++i)
-    {
-      song.events[i].time = ((song.events[i + 1].time - song.events[i].time) / 1'000'000);
-    }
-    if (song.nb_events > 0)
-    {
-      song.events[ song.nb_events - 1].time = 3000; // to wait 3 seconds after last event
-    }
 
     this->song_pos = this->start_pos;
     this->selected_input_port.clear();
@@ -513,6 +521,7 @@ MainWindow::MainWindow(QWidget *parent) :
   song(),
   sound_player(),
   sound_listener_via_fluidsynth(*this),
+  ts_at_cur_event(),
   is_in_pause(true)
 {
   ui->setupUi(this);

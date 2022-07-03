@@ -12,6 +12,7 @@
 
 #include <limits>
 #include <atomic>
+#include <chrono>
 
 #include "utils.hh"
 #include "keyboard.hh"
@@ -94,6 +95,7 @@ class MainWindow : public QMainWindow
     SoundPlayer sound_player;
     SoundListener sound_listener_via_fluidsynth;
 
+    std::chrono::time_point<std::chrono::steady_clock> ts_at_cur_event;
     std::string selected_input_port = "";
 
 
