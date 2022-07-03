@@ -536,22 +536,11 @@ MainWindow::MainWindow(QWidget *parent) :
   signal_checker_timer.start(100 /* ms */);
 #endif
 
-  {
-    qRegisterMetaType<std::vector<unsigned char>>("std::vector<unsigned char>");
-    connect(this, SIGNAL(midi_message_received(std::vector<unsigned char>)), this, SLOT(handle_input_midi(std::vector<unsigned char>)));
-  }
-
-  {
-    connect(this->ui->Playsubsequence, SIGNAL(clicked()), this, SLOT(sub_sequence_click()));
-  }
-
-  {
-    connect(this->ui->replay, SIGNAL(clicked()), this, SLOT(replay()));
-  }
-
-  {
-    song_event_loop();
-  }
+  qRegisterMetaType<std::vector<unsigned char>>("std::vector<unsigned char>");
+  connect(this, SIGNAL(midi_message_received(std::vector<unsigned char>)), this, SLOT(handle_input_midi(std::vector<unsigned char>)));
+  connect(this->ui->Playsubsequence, SIGNAL(clicked()), this, SLOT(sub_sequence_click()));
+  connect(this->ui->replay, SIGNAL(clicked()), this, SLOT(replay()));
+  song_event_loop();
 }
 
 #if !defined(__clang__)
