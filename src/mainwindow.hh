@@ -90,7 +90,9 @@ class MainWindow : public QMainWindow
     QRectF current_page_viewbox;
     QSvgRenderer* cursor_rect;
     QGraphicsSvgItem* svg_rect;
+#if !defined(__wasm)
     QTimer signal_checker_timer;
+#endif
     bin_song_t song;
     SoundPlayer sound_player;
     SoundListener sound_listener_via_fluidsynth;

@@ -517,7 +517,9 @@ MainWindow::MainWindow(QWidget *parent) :
   current_page_viewbox(),
   cursor_rect(new QSvgRenderer(this)),
   svg_rect(nullptr),
+#if !defined(__wasm)
   signal_checker_timer(),
+#endif
   song(),
   sound_player(),
   sound_listener_via_fluidsynth(*this),
@@ -530,8 +532,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
   ui->music_sheet->setScene(music_sheet_scene);
 
+#if !defined(__wasm)
   connect(&signal_checker_timer, SIGNAL(timeout()), this, SLOT(look_for_signals_change()));
   signal_checker_timer.start(100 /* ms */);
+#endif
 
   {
     qRegisterMetaType<std::vector<unsigned char>>("std::vector<unsigned char>");
