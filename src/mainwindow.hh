@@ -47,6 +47,7 @@ class MainWindow : public QMainWindow
 
   private:
     void pause_music();
+    void continue_music();
     void stop_song();
     void play_song(bin_song_t input_song);
     void play_song(const char* data_start, const char* data_end);
@@ -63,14 +64,15 @@ class MainWindow : public QMainWindow
     void play_fuer_Elise__Beethoven();
     void play_Prelidium_1__Bach();
     void play_Etude_As_dur__Chopin();
+    void toggle_play_pause();
+    void sub_sequence_click();
+    void replay();
 
   private slots:
     void song_event_loop();
-    void replay();
     void look_for_signals_change();
     void input_change();
     void handle_input_midi(const std::vector<unsigned char> bytes);
-    void sub_sequence_click();
 
   private:
     static constexpr const unsigned int INVALID_SONG_POS = std::numeric_limits<unsigned int>::max();

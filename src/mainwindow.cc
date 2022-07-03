@@ -39,14 +39,12 @@ void MainWindow::look_for_signals_change()
 
   if (pause_requested)
   {
-    pause_requested = 0;
     pause_music();
   }
 
   if (continue_requested)
   {
-    continue_requested = 0;
-    is_in_pause = false;
+    continue_music();
   }
 
   new_signal_received = 0;
@@ -60,15 +58,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
       (pressed_key == Qt::Key_P) or
       (pressed_key == Qt::Key_Pause))
   {
-    // toggle play pause
-    if (is_in_pause)
-    {
-      is_in_pause = false;
-    }
-    else
-    {
-      pause_music();
-    }
+    toggle_play_pause();
   }
 }
 
@@ -252,8 +242,16 @@ void MainWindow::clear_music_scheet()
 void MainWindow::pause_music()
 {
   this->is_in_pause = true;
-
+  continue_requested = 0;
+  this->ui->PlayPauseButton->setText("Play");
   sound_player.all_notes_off();
+}
+
+void MainWindow::continue_music()
+{
+  continue_requested = 0;
+  is_in_pause = false;
+  this->ui->PlayPauseButton->setText("Pause");
 }
 
 void MainWindow::stop_song()
@@ -271,7 +269,7 @@ void MainWindow::replay()
   this->start_pos = 0;
   this->stop_pos = static_cast<decltype(stop_pos)>(this->song.nb_events);
   this->song_pos = this->start_pos;
-  is_in_pause = false;
+  continue_music();
 }
 
 void MainWindow::open_file(const std::string& filename)
@@ -296,6 +294,7 @@ void MainWindow::play_song(bin_song_t input_song)
 {
   try
   {
+    continue_music();
     clear_music_scheet();
     this->song = std::move(input_song);
     this->start_pos = 0;
@@ -338,7 +337,7 @@ void MainWindow::play_song(bin_song_t input_song)
     }
 
     display_music_sheet(0);
-    is_in_pause = false;
+    continue_music();
   }
   catch (std::exception& e)
   {
@@ -356,6 +355,7 @@ void MainWindow::play_song(bin_song_t input_song)
 			  QMessageBox::Ok,
 			  QMessageBox::Ok);
     clear_music_scheet();
+    pause_music();
   }
 }
 
@@ -395,6 +395,16 @@ void MainWindow::open_file()
 }
 #endif
 
+void MainWindow::toggle_play_pause() {
+  if (this->is_in_pause)
+  {
+    continue_music();
+  }
+  else
+  {
+    pause_music();
+  }
+}
 
 void MainWindow::sub_sequence_click()
 {
@@ -422,7 +432,7 @@ void MainWindow::sub_sequence_click()
     this->song_pos = this->start_pos;
     const auto music_sheet_pos = find_music_sheet_pos(song.events, song_pos);
     display_music_sheet(music_sheet_pos);
-    is_in_pause = false;
+    continue_music();
   }
 
 }
@@ -545,8 +555,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   qRegisterMetaType<std::vector<unsigned char>>("std::vector<unsigned char>");
   connect(this, SIGNAL(midi_message_received(std::vector<unsigned char>)), this, SLOT(handle_input_midi(std::vector<unsigned char>)));
-  connect(this->ui->Playsubsequence, SIGNAL(clicked()), this, SLOT(sub_sequence_click()));
-  connect(this->ui->replay, SIGNAL(clicked()), this, SLOT(replay()));
   song_event_loop();
 }
 
