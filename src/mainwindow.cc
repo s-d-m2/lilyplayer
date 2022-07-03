@@ -198,7 +198,8 @@ void MainWindow::song_event_loop()
     const std::chrono::nanoseconds time_to_process_cur_event =
       std::chrono::steady_clock::now() - this->ts_at_cur_event;
 
-    std::cout << " It took " << time_to_process_cur_event.count() << " ns to process one event!!!\n";
+    // std::cout << " It took " << time_to_process_cur_event.count() << " ns to process one event!!!\n";
+    // std::cout << " Max waiting time was " << interval_between_two_events.count() << " ns!!!\n";
 
     time_to_wait = std::max(interval_between_two_events - time_to_process_cur_event, std::chrono::nanoseconds{0});
   }
