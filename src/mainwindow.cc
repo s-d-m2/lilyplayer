@@ -445,37 +445,6 @@ void MainWindow::handle_input_midi(const std::vector<unsigned char> message)
   this->process_keyboard_event(key_events.keys_down, key_events.keys_up, messages);
 }
 
-void MainWindow::input_change()
-{
-  // find out which menu item has been clicked.
-  const auto menu_input = ui->menuInput;
-  const auto button_list = menu_input->findChildren<QAction*>(QString(), Qt::FindDirectChildrenOnly);
-
-  const auto nb_checked_button = std::count_if(button_list.cbegin(), button_list.cend(), [] (const auto& button) {
-											   return button->isChecked();
-											 });
-  if (nb_checked_button <= 0)
-  {
-    QMessageBox::critical(this, tr("No clicked button found"),
-			  "The input menu should have a button clicked",
-			  QMessageBox::Ok,
-			  QMessageBox::Ok);
-    return;
-  }
-
-  if (nb_checked_button >= 2)
-  {
-    QMessageBox::critical(this, tr("Too many clicked button found"),
-			  "The input menu should at most one button clicked",
-			  QMessageBox::Ok,
-			  QMessageBox::Ok);
-    return;
-  }
-
-
-  this->clear_music_scheet();
-}
-
 void MainWindow::play_fuer_Elise__Beethoven() {
 #if defined(__wasm)
   open_file(std::string{"fur_Elise.bin"});

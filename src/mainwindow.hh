@@ -71,7 +71,6 @@ class MainWindow : public QMainWindow
   private slots:
     void song_event_loop();
     void look_for_signals_change();
-    void input_change();
     void handle_input_midi(const std::vector<unsigned char> bytes);
 
   private:
