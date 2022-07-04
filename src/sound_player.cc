@@ -3,38 +3,22 @@
 #include "sound_player.hh"
 #include "filename_to_catch.h"
 
-#ifdef __EMSCRIPTEN__
-#include <vector>
-#include <cstdint>
-#include <emscripten/emscripten.h>
-#include <AL/al.h>
-#include <AL/alc.h>
+#if USE_OPENAL
+  #include <vector>
+  #include <cstdint>
+  #include <AL/al.h>
+  #include <AL/alc.h>
 #endif
-
 
 extern "C" {
   const char* const soundfile_filename = "Yamaha-Grand-Lite-v2.0.sf2";
 }
 
-
-#ifdef __EMSCRIPTEN__
-namespace {
-void load_to_buffer(fluid_synth_t *synth, ALuint buffer, unsigned sample_rate) {
-  std::vector<int16_t> buf_data(sample_rate * 2); // stereo
-  fluid_synth_write_s16(synth, sample_rate,
-                        buf_data.data(), 0, 2,
-                        buf_data.data(), 1, 2);
-  alBufferData(buffer, AL_FORMAT_STEREO16, buf_data.data(),
-               sizeof(int16_t) * buf_data.size(), sample_rate);
-}
-}
-#endif
-
 SoundPlayer::SoundPlayer()
   : settings(nullptr, &delete_fluid_settings)
   , synth(nullptr, &delete_fluid_synth)
   , audio_driver(nullptr, &delete_fluid_audio_driver)
-#ifdef __EMSCRIPTEN__
+#if USE_OPENAL
   , AL_device(nullptr, &alcCloseDevice)
   , AL_context(nullptr, &alcDestroyContext)
   , sequencer(nullptr, &delete_fluid_sequencer)
@@ -65,7 +49,7 @@ SoundPlayer::SoundPlayer()
 
   std::cerr << "Done loading the sound player" << std::endl;
 
-#ifdef __EMSCRIPTEN__
+#if USE_OPENAL
   AL_device.reset(alcOpenDevice(nullptr));
   AL_context.reset(alcCreateContext(AL_device.get(), nullptr));
 
@@ -83,33 +67,45 @@ SoundPlayer::SoundPlayer()
 
 void SoundPlayer::note_on(uint8_t pitch) {
   fluid_synth_noteon(synth.get(), 0 /* channel */, pitch, 100 /* vel == volume */);
-  output_music();
 }
 
 void SoundPlayer::note_off(uint8_t pitch) {
   fluid_synth_noteon(synth.get(), 0 /* channel */, pitch, 0 /* vel == volume */);
-  output_music();
 }
 
 void SoundPlayer::all_notes_off() {
   fluid_synth_all_notes_off(synth.get(), 0 /* channel */);
-  output_music();
 }
 
+#if USE_OPENAL
+namespace {
+  void load_to_buffer(fluid_synth_t * synth, ALuint  buffer, unsigned sample_rate) {
+    std::vector<int16_t> buf_data(sample_rate * 6); // stereo
+
+    fluid_synth_write_s16(synth, static_cast<int>(sample_rate),
+			  buf_data.data(), 0, 2,
+			  buf_data.data(), 1, 2);
+
+    alBufferData(buffer, AL_FORMAT_STEREO16, buf_data.data(),
+		 static_cast<int>(sizeof(int16_t) * buf_data.size()), static_cast<int>(sample_rate));
+  }
+}
+#endif
+
 void SoundPlayer::output_music() {
-#ifdef __EMSCRIPTEN__
-  constexpr int BUFFER_NUM = 3;
+#if USE_OPENAL
+  constexpr int BUFFER_NUM = 1;
   ALuint buffers[BUFFER_NUM];
 
   alGenBuffers(BUFFER_NUM, buffers);
   for (int i = 0; i < BUFFER_NUM; ++i) {
     std::cout << "Tick: " << fluid_sequencer_get_tick(sequencer.get()) << std::endl;
-    load_to_buffer(synth.get(), buffers[i], sample_rate);
+    load_to_buffer(synth.get(), buffers[i], static_cast<unsigned int>(sample_rate));
   }
 
   ALuint source;
   alGenSources(1, &source);
-  alSourceQueueBuffers(source, 3, buffers);
+  alSourceQueueBuffers(source, 1, buffers);
   alSourcePlay(source);
 #endif
 }

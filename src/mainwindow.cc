@@ -76,6 +76,8 @@ void MainWindow::process_keyboard_event(const std::vector<key_down>& keys_down,
     sound_player.note_off(key_up.pitch);
   }
 
+  sound_player.output_music();
+
   update_keyboard(keys_down, keys_up, this->keyboard);
 }
 
@@ -246,6 +248,7 @@ void MainWindow::pause_music()
   continue_requested = 0;
   this->ui->PlayPauseButton->setText("Play");
   sound_player.all_notes_off();
+  sound_player.output_music();
 }
 
 void MainWindow::continue_music()
