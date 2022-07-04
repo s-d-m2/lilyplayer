@@ -525,7 +525,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
   QFont font;
   font.setPointSize(20);
-  instruction_scene->addText("Select a music sheet using the \n\n         \"input\" menu\n\n    on the top left corner.", font);
+  instruction_scene->addText("Select a music sheet using the \n\n"
+			     "         \"input\" menu\n\n"
+			     "    on the top left corner.\n\n"
+			     "Precompiled music sheets are available at\n"
+			     "https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer", font);
   ui->music_sheet->setScene(instruction_scene);
 
 #if !defined(__wasm)
