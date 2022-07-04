@@ -295,6 +295,8 @@ void MainWindow::play_song(bin_song_t input_song)
 {
   try
   {
+    ui->music_sheet->setScene(music_sheet_scene);
+
     continue_music();
     clear_music_scheet();
     this->song = std::move(input_song);
@@ -356,6 +358,7 @@ void MainWindow::play_song(bin_song_t input_song)
 			  QMessageBox::Ok,
 			  QMessageBox::Ok);
     clear_music_scheet();
+    ui->music_sheet->setScene(instruction_scene);
     pause_music();
   }
 }
@@ -496,6 +499,7 @@ void MainWindow::play_song(const char* data_start, const char* data_end) {
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow),
+  instruction_scene(new QGraphicsScene(this)),
   keyboard_scene(new QGraphicsScene(this)),
   keyboard(*keyboard_scene),
   music_sheet_scene(new QGraphicsScene(this)),
@@ -516,7 +520,10 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->keyboard->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
   ui->keyboard->setScene(keyboard_scene);
 
-  ui->music_sheet->setScene(music_sheet_scene);
+  QFont font;
+  font.setPointSize(20);
+  instruction_scene->addText("Select a music sheet using the \n\n         \"input\" menu\n\n    on the top left corner.", font);
+  ui->music_sheet->setScene(instruction_scene);
 
 #if !defined(__wasm)
   connect(&signal_checker_timer, SIGNAL(timeout()), this, SLOT(look_for_signals_change()));

@@ -84,6 +84,7 @@ class MainWindow : public QMainWindow
     };
 
     Ui::MainWindow *ui;
+    QGraphicsScene *instruction_scene;
     QGraphicsScene *keyboard_scene;
     keys_rects keyboard;
     QGraphicsScene *music_sheet_scene;
