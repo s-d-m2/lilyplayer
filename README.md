@@ -13,7 +13,7 @@ lilyplayer.
 Web demo
 ----
 
-You can see lilyplayer in action directly in your browser at https://lilyplayer-web.shuttleapp.rs/
+You can see lilyplayer in action directly in your browser at https://lilyplayer.shuttleapp.rs/
 
 It takes some time to load as it downloads about 50MiB at the start.
 
