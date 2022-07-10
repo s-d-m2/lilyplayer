@@ -175,7 +175,23 @@ music_sheet_event read_grouped_event(Readable& file)
   return res;
 }
 
+template <typename Readable>
+size_t get_input_size(Readable& input) {
+  // sadly, the input isn't const but at the end of the function, it should be in the same state
+  // as at the beginning.
+  const auto init_pos = input.tellg();
+  if (init_pos < 0) {
+    throw std::runtime_error("Error: couldn't get the input file size (failed to save current position)");
+  }
 
+  input.seekg(0, std::ios_base::end);
+  const auto file_size = input.tellg();
+  if (file_size < 0) {
+    throw std::runtime_error("Error: couldn't get the input file size");
+  }
+  input.seekg(init_pos);
+  return static_cast<size_t>(file_size);
+}
 
 template <typename Readable>
 static bin_song_t get_song_from_file(Readable& file)
@@ -234,24 +250,33 @@ static bin_song_t get_song_from_file(Readable& file)
 
   // read the svg files
   const auto nb_svg_files = read_big_endian<uint16_t>(file);
+  const auto input_file_size = get_input_size(file);
   for (auto i = decltype(nb_svg_files){0}; i < nb_svg_files; ++i)
   {
-    const auto file_size = read_big_endian<uint32_t>(file);
+    const auto cur_svg_file_size = read_big_endian<uint32_t>(file);
+
+    // Make sure not to allocate more data than can be read from the file
+    const auto cur_file_pos = file.tellg();
+    if (cur_file_pos < 0) {
+      throw std::runtime_error("Error: failed to determine current position in file.");
+    }
+    const size_t cur_file_pos_u = static_cast<size_t>(cur_file_pos);
+
+    if (cur_file_pos_u + cur_svg_file_size > input_file_size) {
+      throw std::runtime_error(std::string{"Error: invalid size of svg file "} + std::to_string(static_cast<unsigned>(i)) + " inside the input detected.");
+    }
 
     svg_data this_file;
-    this_file.data.resize( file_size );
+    this_file.data.resize( cur_svg_file_size );
 
     auto ptr = static_cast<void*>(this_file.data.data());
-    file.read( static_cast<char*>(ptr), static_cast<int>(file_size) );
+    file.read( static_cast<char*>(ptr), static_cast<int>(cur_svg_file_size) );
 
     res.svg_files.emplace_back( std::move(this_file) );
-  }
 
-  // sanity check: make sure parsing the svg_files won't cause any problem
-  for (auto i = decltype(nb_svg_files){0}; i < nb_svg_files; ++i)
-  {
-    const QByteArray sheet (static_cast<const char*>(static_cast<const void*>(res.svg_files[i].data.data())),
-			    static_cast<int>(res.svg_files[i].data.size()));
+    // make sure that parsing the newly read svg file won't caues any problem
+    const QByteArray sheet (static_cast<const char*>(static_cast<const void*>(res.svg_files.back().data.data())),
+			    static_cast<int>(res.svg_files.back().data.size()));
 
     QSvgRenderer renderer;
     const auto is_load_successfull = renderer.load(sheet);
@@ -331,7 +356,7 @@ static bin_song_t get_song_from_file(Readable& file)
 
 
 bin_song_t get_song(const std::string& filename) {
-  std::fstream file(filename, std::ios::binary | std::ios::in);
+  std::ifstream file(filename, std::ios::binary | std::ios::in);
 
   if (not file.is_open())
   {

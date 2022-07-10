@@ -281,7 +281,10 @@ void MainWindow::open_file(const std::string& filename)
   try {
     auto input_song = get_song(filename);
     this->play_song(std::move(input_song));
+  } catch (const std::exception& e) {
+    std::cerr << "Error occurred while opening the file [" << filename << "] with message: " << e.what() << "\n";
   } catch (...) {
+    std::cerr << "Error occurred while opening the file [" << filename << "]\n";
   }
 }
 
@@ -290,7 +293,10 @@ void MainWindow::open_file(const std::string_view& file_data)
   try {
     auto input_song = get_song(file_data);
     this->play_song(std::move(input_song));
+  } catch (const std::exception& e) {
+    std::cerr << "Error occurred while opening the file with message: " << e.what() << "\n";
   } catch (...) {
+    std::cerr << "Error occurred while opening the file\n";
   }
 }
 
