@@ -531,11 +531,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
   QFont font;
   font.setPointSize(20);
-  instruction_scene->addText("Select a music sheet using the \n\n"
-			     "         \"input\" menu\n\n"
-			     "    on the top left corner.\n\n"
-			     "Precompiled music sheets are available at\n"
-			     "https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer", font);
+  QGraphicsTextItem* text = instruction_scene->addText("", font);
+  text->setOpenExternalLinks(true);
+  text->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
+  text->setHtml("Select a music sheet using the <u><em>input</em></u> menu<br/>"
+		"on the <strong><em>top left</em></strong> corner.<br/><br/>"
+		"Precompiled music sheets are available at<br/>"
+		"<a href=\"https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer\">"
+		"https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer"
+		"</a>");
+
   ui->music_sheet->setScene(instruction_scene);
 
 #if !defined(__wasm)
