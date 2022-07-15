@@ -6,6 +6,12 @@
 #include <fstream>
 #include <string>
 
+#if defined(__wasm)
+  #define USE_OPENAL 1
+#else
+  #define USE_OPENAL 0
+#endif
+
 struct key_down
 {
     key_down(uint8_t _pitch, uint8_t _staff_num)

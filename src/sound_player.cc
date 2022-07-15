@@ -47,8 +47,6 @@ SoundPlayer::SoundPlayer()
     throw std::runtime_error("Error: failed to create the audio driver for fluidsynth");
   }
 
-  std::cerr << "Done loading the sound player" << std::endl;
-
 #if USE_OPENAL
   AL_device.reset(alcOpenDevice(nullptr));
   AL_context.reset(alcCreateContext(AL_device.get(), nullptr));
@@ -62,6 +60,19 @@ SoundPlayer::SoundPlayer()
   fluid_sequencer_register_fluidsynth(sequencer.get(), synth.get());
   fluid_settings_getnum(settings.get(), "synth.sample-rate", &sample_rate);
   std::cout << "synth.sample-rate: " << sample_rate << std::endl;
+
+
+  audio_buffer_data.resize(sample_rate * 6); // stereo
+
+#endif
+
+  std::cerr << "Done loading the sound player" << std::endl;
+
+}
+
+SoundPlayer::~SoundPlayer()
+{
+#if USE_OPENAL
 #endif
 }
 
@@ -78,34 +89,22 @@ void SoundPlayer::all_notes_off() {
 }
 
 #if USE_OPENAL
-namespace {
-  void load_to_buffer(fluid_synth_t * synth, ALuint  buffer, unsigned sample_rate) {
-    std::vector<int16_t> buf_data(sample_rate * 6); // stereo
+void SoundPlayer::prepare_buffer() {
+  alGenBuffers(1, &buffer_num);
+  alGenSources(1, &source);
 
-    fluid_synth_write_s16(synth, static_cast<int>(sample_rate),
-			  buf_data.data(), 0, 2,
-			  buf_data.data(), 1, 2);
+  auto* const audio_data_mem = audio_buffer_data.data();
+  fluid_synth_write_s16(synth.get(), static_cast<int>(sample_rate),
+			audio_data_mem, 0, 2,
+			audio_data_mem, 1, 2);
 
-    alBufferData(buffer, AL_FORMAT_STEREO16, buf_data.data(),
-		 static_cast<int>(sizeof(int16_t) * buf_data.size()), static_cast<int>(sample_rate));
-  }
+  alBufferData(buffer_num, AL_FORMAT_STEREO16, audio_data_mem,
+		 static_cast<int>(sizeof(int16_t) * audio_buffer_data.size()), static_cast<int>(sample_rate));
+
+  alSourceQueueBuffers(source, 1, &buffer_num);
 }
-#endif
 
 void SoundPlayer::output_music() {
-#if USE_OPENAL
-  constexpr int BUFFER_NUM = 1;
-  ALuint buffers[BUFFER_NUM];
-
-  alGenBuffers(BUFFER_NUM, buffers);
-  for (int i = 0; i < BUFFER_NUM; ++i) {
-    std::cout << "Tick: " << fluid_sequencer_get_tick(sequencer.get()) << std::endl;
-    load_to_buffer(synth.get(), buffers[i], static_cast<unsigned int>(sample_rate));
-  }
-
-  ALuint source;
-  alGenSources(1, &source);
-  alSourceQueueBuffers(source, 1, buffers);
-  alSourcePlay(source);
-#endif
+   alSourcePlay(source);
 }
+#endif

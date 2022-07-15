@@ -46,16 +46,19 @@ class MainWindow : public QMainWindow
 				const std::vector<midi_message_t>& messages);
 
   private:
+    void process_keyboard_event(unsigned int event_pos);
     void pause_music();
     void continue_music();
     void stop_song();
     void play_song(bin_song_t input_song);
     void play_song(const char* data_start, const char* data_end);
     void clear_music_scheet();
-    void process_music_sheet_event(const music_sheet_event& keys_event);
+    void process_music_sheet_event(unsigned int event_pos);
     void display_music_sheet(const unsigned music_sheet_pos);
     void keyPressEvent(QKeyEvent * event) override;
-
+#if USE_OPENAL
+    void add_pre_computed_sound(unsigned int pos);
+#endif
   signals:
     void midi_message_received(std::vector<unsigned char> bytes);
 
@@ -105,6 +108,10 @@ class MainWindow : public QMainWindow
     unsigned int stop_pos = INVALID_SONG_POS;
     unsigned int song_pos = INVALID_SONG_POS;
     std::atomic<bool> is_in_pause;
+
+#if USE_OPENAL
+    unsigned int prepared_music_pos = INVALID_SONG_POS;
+#endif
 };
 
 #pragma GCC diagnostic pop
