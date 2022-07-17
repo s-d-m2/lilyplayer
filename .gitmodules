@@ -3,7 +3,7 @@
 	url = https://github.com/FluidSynth/fluidsynth/
 [submodule "3rd-party/fluidsynth-emscripten"]
 	path = 3rd-party/fluidsynth-emscripten
-	url = https://github.com/jet2jet/fluidsynth-emscripten
+	url = https://github.com/s-d-m/fluidsynth-emscripten
 [submodule "3rd-party/qt5"]
 	path = 3rd-party/qt5
 	url = git://code.qt.io/qt/qt5.git
