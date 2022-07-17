@@ -76,9 +76,61 @@ void MainWindow::process_keyboard_event(const std::vector<key_down>& keys_down,
     sound_player.note_off(key_up.pitch);
   }
 
+#if USE_OPENAL
+  sound_player.prepare_buffer();
   sound_player.output_music();
-
+  prepared_music_pos = INVALID_SONG_POS;
+#endif
   update_keyboard(keys_down, keys_up, this->keyboard);
+}
+
+#if USE_OPENAL
+void MainWindow::add_pre_computed_sound(unsigned int pos) {
+  if (song_pos >= song.nb_events)
+  {
+    throw std::runtime_error("Invalid song position found");
+  }
+
+  const music_sheet_event& event = song.events[pos];
+
+  for (auto& key_down : event.keys_down)
+  {
+    sound_player.note_on(key_down.pitch);
+  }
+
+  for (auto& key_up : event.keys_up)
+  {
+    sound_player.note_off(key_up.pitch);
+  }
+
+  sound_player.prepare_buffer();
+  prepared_music_pos = pos;
+}
+#endif
+
+void MainWindow::process_keyboard_event(unsigned int event_pos) {
+  if (event_pos >= song.nb_events)
+  {
+    throw std::runtime_error("Invalid song position found");
+  }
+
+  const music_sheet_event& event = song.events[event_pos];
+
+#if !USE_OPENAL
+  this->process_keyboard_event(event.keys_down, event.keys_up, event.midi_messages);
+#else
+
+  if (prepared_music_pos == song_pos)
+  {
+    update_keyboard(event.keys_down, event.keys_up, this->keyboard);
+    sound_player.output_music();
+    prepared_music_pos = INVALID_SONG_POS;
+  }
+  else
+  {
+    this->process_keyboard_event(event.keys_down, event.keys_up, event.midi_messages);
+  }
+#endif
 }
 
 void MainWindow::display_music_sheet(const unsigned music_sheet_pos)
@@ -124,10 +176,17 @@ void MainWindow::display_music_sheet(const unsigned music_sheet_pos)
   cursor_rect->load(svg_str_rectangle);
 }
 
-void MainWindow::process_music_sheet_event(const music_sheet_event& event)
+void MainWindow::process_music_sheet_event(unsigned int event_pos)
 {
+  if (event_pos >= song.nb_events)
+  {
+    throw std::runtime_error("Invalid song position found");
+  }
+
   // process the keyboard event. Must have one.
-  this->process_keyboard_event(event.keys_down, event.keys_up, event.midi_messages);
+  this->process_keyboard_event(event_pos);
+
+  const music_sheet_event& event = this->song.events[event_pos];
 
   bool update_required = false;
 
@@ -182,18 +241,20 @@ void MainWindow::song_event_loop()
     return;
   }
 
-  if (song_pos > song.nb_events)
+  if (song_pos >= song.nb_events)
   {
     throw std::runtime_error("Invalid song position found");
   }
 
-  process_music_sheet_event( song.events[song_pos] );
-
-
+  process_music_sheet_event( song_pos );
 
   std::chrono::nanoseconds time_to_wait;
-  if (song_pos < song.nb_events)
+  if (song_pos + 1 < song.nb_events)
   {
+#if USE_OPENAL
+    add_pre_computed_sound(song_pos + 1);
+#endif
+
     const std::chrono::nanoseconds interval_between_two_events {
       (song.events[song_pos + 1].time - song.events[song_pos].time) };
 
@@ -248,7 +309,11 @@ void MainWindow::pause_music()
   continue_requested = 0;
   this->ui->PlayPauseButton->setText("Play");
   sound_player.all_notes_off();
+#if USE_OPENAL
+  sound_player.prepare_buffer();
   sound_player.output_music();
+  prepared_music_pos = INVALID_SONG_POS;
+#endif
 }
 
 void MainWindow::continue_music()
@@ -273,6 +338,10 @@ void MainWindow::replay()
   this->start_pos = 0;
   this->stop_pos = static_cast<decltype(stop_pos)>(this->song.nb_events);
   this->song_pos = this->start_pos;
+#if USE_OPENAL
+  add_pre_computed_sound(0);
+  prepared_music_pos = 0;
+#endif
   continue_music();
 }
 
@@ -349,6 +418,10 @@ void MainWindow::play_song(bin_song_t input_song)
     }
 
     display_music_sheet(0);
+#if USE_OPENAL
+    add_pre_computed_sound(0);
+#endif
+
     continue_music();
   }
   catch (std::exception& e)

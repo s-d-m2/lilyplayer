@@ -1,5 +1,10 @@
-all lilyplayer:
-	${MAKE} -f Makefile.native "$@"
+all: lilyplayer
+
+doc:
+	mdbook build
+
+lilyplayer native:
+	${MAKE} -f Makefile.native "all"
 
 wasm:
 	${MAKE} -f Makefile.wasm "all"
@@ -14,4 +19,4 @@ install:
 appimage: lilyplayer
 	./make-appimage.sh
 
-.PHONY: all lilyplayer clean appimage install wasm
+.PHONY: all lilyplayer clean appimage install wasm native doc
