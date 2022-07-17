@@ -66,7 +66,7 @@ Misc
 To generate your own music sheets, see [lilydumper](https://github.com/s-d-m/lilydumper) or simply grab
 pre-made one [here](https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer)
 
-To read some documentation about this project, go to [lilyplayer documentation](https://s-d-m.github.io/lilyplayer/).
+To read some documentation about this project, go to [lilyplayer documentation](https://s-d-m.github.io/lilyplayer-doc/).
 
 Other files you may want to read
 --------------------------------
