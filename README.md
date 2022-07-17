@@ -5,15 +5,10 @@ Lilyplayer plays piano music sheets, as can be seen below
 
 [![Demo](./misc/lilyplayer-fake-video-screenshot.png)](./misc/lilyplayer-demo.webm "demo")
 
-For ready to use builds, you can grab the [appimage on the release page](https://github.com/s-d-m/lilyplayer/releases/tag/continuous),
-make it executable and then simply run it.
-You can also download [premade music sheets](https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer) and play them with
-lilyplayer.
-
-Web demo
+LIVE demo!
 ----
 
-You can see lilyplayer in action directly in your browser at https://lilyplayer.shuttleapp.rs/
+You can see lilyplayer in action directly in your browser at https://lilyplayer.shuttleapp.rs/ !
 
 It takes some time to load as it downloads about 50MiB at the start.
 
@@ -56,24 +51,14 @@ Once all the dependencies have been installed, you can simply compile `lilyplaye
 
 This will generate the `lilyplayer` binary in `./build_dir_for_native_output`
 
-If you want to generate an appimage, you will also need the `wget`, `readlink`, `dirname`.
-
-	sudo apt-get install wget
-
-Then you can generate the appimage using:
-
-	make appimage
-
-A file lilyplayer-x86_64.AppImage should be generated in the bin folder
-
 How to use
 ----------
 
-This will open an a window showing a piano keyboard.
+Running lilyplayer will open a window showing a keyboard at the bottom and a sheet with some text.
 
-or you can play a midi file by choosing `select file` in the input menu, or using the `Ctrl + O` shortcut.
+You can then play a music sheet file by choosing `select file` in the input menu, or using the `Ctrl + O` shortcut.
 
-When playing a midi file, one can play/pause it using the `space` key, or the `Ctrl + P` shortcut.
+When playing a music sheet, one can play/pause it using the `space` key, or the `Ctrl + P` shortcut.
 
 Misc
 -----

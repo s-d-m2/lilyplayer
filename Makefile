@@ -16,7 +16,4 @@ clean:
 install:
 	./make-install.sh ${DESTDIR}
 
-appimage: lilyplayer
-	./make-appimage.sh
-
-.PHONY: all lilyplayer clean appimage install wasm native doc
+.PHONY: all lilyplayer clean install wasm native doc
