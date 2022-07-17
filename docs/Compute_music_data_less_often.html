@@ -1,0 +1,255 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Optimisation: Compute music data less often - Lilyplayer's documentation</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="_FontAwesome/css/font-awesome.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+
+    </head>
+    <body class="light">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { } 
+            if (theme === null || theme === undefined) { theme = 'light'; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme + ' js';
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <ol class="chapter"><li class="affix"><a href="intro.html">Introduction</a></li><li><a href="design_to_handle_music_calculation_slowness.html"><strong aria-hidden="true">1.</strong> Slowness in music computation</a></li><li><ol class="section"><li><a href="Difference_in_processing_music_between_wasm_and_native.html"><strong aria-hidden="true">1.1.</strong> Difference in processing music between wasm and native</a></li><li><a href="Compute_music_data_less_often.html" class="active"><strong aria-hidden="true">1.2.</strong> Optimisation: Compute music data less often</a></li><li><a href="Variance_in_between_events_actually_played.html"><strong aria-hidden="true">1.3.</strong> Variance in time between events actually played</a></li><li><a href="Precompute_all_the_music_buffers.html"><strong aria-hidden="true">1.4.</strong> (failed) Optimisation: precompute all the music buffers</a></li><li><a href="Precompute_the_following_music_buffer.html"><strong aria-hidden="true">1.5.</strong> Optimisation: precompute the following music buffer</a></li></ol></li><li><a href="conclusion.html">Conclusion</a></li></ol>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light <span class="default">(default)</span></button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">Lilyplayer's documentation</h1> 
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <a class="header" href="Compute_music_data_less_often.html#optimisation-1-compute-music-data-less-often" id="optimisation-1-compute-music-data-less-often"><h1>Optimisation #1: Compute music data less often</h1></a>
+<p>OpenAL and fluidsynth internals are nowhere near my core strengths, therefore the following was found via some
+trial and error method.</p>
+<p>When playing music, the program was doing the following:</p>
+<pre><code>On keyboard event (i.e. when pressing or releasing piano keys):
+  For each key pressed:
+    - tell fluidsynth that key just got pressed
+    - ask fluidsynth to compute the new music data in a buffer
+    - send that buffer to openAL
+
+  For each key released:
+    - tell fluidsynth that key just got un-pressed
+    - ask fluidsynth to compute the new music data in a buffer
+    - send that buffer to openAL
+
+Wait for the next event.
+</code></pre>
+<p>One attempt here was to restructure this code to only ask fluidsynth to compute the music data once per music
+event, in other words, changing the code to the following:</p>
+<pre><code>On keyboard event (i.e. when pressing or releasing piano keys):
+  For each key pressed:
+    - tell fluidsynth that key just got pressed
+
+  For each key released:
+    - tell fluidsynth that key just got un-pressed
+
+  ask fluidsynth to compute the new music data in a buffer
+  send that buffer to openAL
+
+Wait for the next event.
+</code></pre>
+<p>An important thing to do when trying these possible optimisations is to always ensure that the software still
+works. A lot of my attempts resulted in having no music getting played at all, or sometimes being played but
+feeling jerky. I was concerned that this optimisation could lead to only hearing the music from the last key
+instead of all of them. Before looking into performance improvements, correctness need to be maintained.</p>
+<p>On this attempt, if no measurable timing difference would appear, we would know that computing music is linear
+to the number of key changes. If instead things would become about <code>n</code> times faster when there are <code>n</code> keys
+pressed and released, it would mean filling the buffer takes the same amount of time regardless of the number
+of key changes, and therefore should only be done as little times as strictly necessary.</p>
+<p>Measuring this change showed that we were on the side of <code>n</code> times faster. This change alone was enough to
+make music playable at the right speed. With this change, a music event takes about 12ms on firefox, and 20
+on chrome. Of course the exact computation times change based on several factors, e.g. number of key changes
+but also CPU thermal throtting or thread scheduling, of which I have little to no control over. Those numbers
+here are only a ballpark figure, which leads to the next issue: music correctness.</p>
+<p>After this optimisation, the timing for computation was as follow on firefox and chrome.</p>
+<p><img src="./Time_to_compute_music_data.png" alt="Graph showing histogram to time computation" /></p>
+<p>On this graph, each column represent a duration window of half a millisecond.  We can see that firefox manages
+to compute the data most of time in less than 15 milliseconds. The most common duration being between 11.5 and
+12 ms.</p>
+<p>For chrome, the computation usually takes between 20 and 20.5 milliseconds.</p>
+<table><thead><tr><th> Durations in ms </th><th> min  </th><th> average </th><th> stddev </th><th> max  </th></tr></thead><tbody>
+<tr><td> firefox         </td><td> 9.0  </td><td> 12.7    </td><td> 1.3    </td><td> 24.0 </td></tr>
+<tr><td> chrome          </td><td> 12.1 </td><td> 20.5    </td><td> 1.0    </td><td> 35.8 </td></tr>
+</tbody></table>
+<p>This graph was generated by playing <code>Etude as dur -op25 - 01</code> on a 2011 laptop using firefox 102 and chromium
+103 on linux with a kernel version 5.18.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="Difference_in_processing_music_between_wasm_and_native.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="Variance_in_between_events_actually_played.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="Difference_in_processing_music_between_wasm_and_native.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="Variance_in_between_events_actually_played.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+
+        
+        <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
+        
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+    </body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Lilyplayer's documentation</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="_FontAwesome/css/font-awesome.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+
+    </head>
+    <body class="light">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { } 
+            if (theme === null || theme === undefined) { theme = 'light'; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme + ' js';
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <ol class="chapter"><li class="affix"><a href="intro.html">Introduction</a></li><li><a href="design_to_handle_music_calculation_slowness.html"><strong aria-hidden="true">1.</strong> Slowness in music computation</a></li><li><ol class="section"><li><a href="Difference_in_processing_music_between_wasm_and_native.html"><strong aria-hidden="true">1.1.</strong> Difference in processing music between wasm and native</a></li><li><a href="Compute_music_data_less_often.html"><strong aria-hidden="true">1.2.</strong> Optimisation: Compute music data less often</a></li><li><a href="Variance_in_between_events_actually_played.html"><strong aria-hidden="true">1.3.</strong> Variance in time between events actually played</a></li><li><a href="Precompute_all_the_music_buffers.html"><strong aria-hidden="true">1.4.</strong> (failed) Optimisation: precompute all the music buffers</a></li><li><a href="Precompute_the_following_music_buffer.html"><strong aria-hidden="true">1.5.</strong> Optimisation: precompute the following music buffer</a></li></ol></li><li><a href="conclusion.html">Conclusion</a></li></ol>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light <span class="default">(default)</span></button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">Lilyplayer's documentation</h1> 
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <a class="header" href="print.html#introduction" id="introduction"><h1>Introduction</h1></a>
+<p>This documentation lists technical issues encountered during the development of lilyplayer and how they were taken care of (or not).</p>
+<p>If you are interested in how the software extracts the keys to plays, when to play them, and how to overlay a cursor on top of the music
+sheet, have a look at <a href="https://s-d-m.github.io/lilydumper/">this page instead</a></p>
+<a class="header" href="print.html#issues-with-slowness-of-computing-music-data" id="issues-with-slowness-of-computing-music-data"><h1>Issues with slowness of computing music data</h1></a>
+<p>When porting the software to webassembly, a performance issue got uncovered.  Since lilyplayer is a
+music-playing software, it has real-time constraints, even though it only deals with &quot;soft real-time&quot;, not
+hard real-time. When listening to the music, it was clear that the wasm version was too slow.  The music was
+clearly played too slowly compared to the real deed.</p>
+<p>However, the performance issue was only appearing on the wasm version, not the native one.</p>
+<p>Since webassembly does not provide good tools for troubleshooting performance issues, the method to find out
+what was taking too slow was simply to manually log how long operations were taking. This was done using the
+old and reliable method of starting a chrono before, doing work, and stopping it once the work is done.</p>
+<p>Turned out, the slowness was all in computing music data.</p>
+<a class="header" href="print.html#difference-in-processing-music-between-wasm-and-native" id="difference-in-processing-music-between-wasm-and-native"><h1>Difference in processing music between wasm and native</h1></a>
+<p>The software used for producing music out of midi events used to be librtmidi. When adding a webassembly
+version, a move to fluidsynth was made. The rationale behind was that using fluidsynth for native and
+webassembly seemed easier than getting librtmidi to work in a wasm context. As a bonus point, fluidsynth
+produces nicer quality output.  Unfortunately, using fluidsynth for native and wasm is not done the same way.</p>
+<p>Fluidsynth can output music to several backends like OSS, ALSA, SDL and a few more. These backends are
+ultimately where the operating system gets orders to send data to speakers. I'm simplifying a bit here. OSS
+and ALSA are linux APIs to do so and fluidsynth automatically picks a suitable backend based on the system it
+is running on.</p>
+<p>In webassembly, the browser API for producing music is OpenAL ... which fluidsynth does not support.
+Consequently, to get music to the speaker, the wasm version of lilyplayer uses an intermediate step: it
+instructs fluidsynth to generate music data into a buffer and then pushes this buffer to openAL. On the native
+version, there is no intermediate buffer used, as fluidsynth directly outputs to the backend.</p>
+<p>Using the timing method described above, we got that for each music_event (i.e. user plays some keys)
+generating music was taking around 250 microseconds (+/- 100 microseconds) on the native app, using a laptop
+produced in 2011 running linux, versus 70 milliseconds on firefox and 100-120 milliseconds for chrome on the
+same laptop.  Thes numbers are not precise as at that moment I was only looking for broad numbers to find
+where the issue performance was, and not so much interested in making a good benchmark. A laptop from 2019
+running macOS showed only slighty lower (around 20% lower) numbers for the wasm app.</p>
+<p>The important thing to always keep in mind, is that when playing a song the maximum duration allowed to compute
+music data is decided by the music sheet. For example, let's say we are playing a song with tempo of 60 quarter
+note per minute, that is one quarter note per second, and the song consists only of four quarter notes in
+succession. In this case, we have a full second to compute music for one event, before the next event arrives.
+The faster paced the tempo and the music is, the less time for computation we have.</p>
+<p>The data for <code>Etude as dur - op25 - 01</code> from Chopin is as follow:</p>
+<ul>
+<li>1060 times a maximum duration of 96ms to compute music</li>
+<li>126 times, we can compute the music in at most 48ms.</li>
+<li>5 times at most 24.038ms to compute music before hitting the milestone.</li>
+</ul>
+<p>Seeing the computation times on firefox and chrome, we get that the software is just not efficient enough to
+play a fast-paced song like Chopin. Considering how fast computers are nowadays, and also the fact that the
+software had no issue with the native version, something had to be done.</p>
+<p>A first experiment to know if using openAL was inherently slow, or if compiling to wasm was incurring too much
+overhead was to change the native program to do the same thing as the wasm one, that is use the intermediate
+buffer and output to openAL too.</p>
+<p>The numbers I got were roughly about twice lower than wasm running on firefox, that is, the music computation
+was only twice as fast on native than wasm when using openAL. A computation with fluidsynth's usual backend
+takes roughly 250 - 300 microseconds, versus 35 milliseconds on native and twice as much on firefox. Wasm
+overhead compared to native is only a factor of 2, meaning I can't blame wasm for being too slow for my needs.</p>
+<p>A more fine-grained measurement showed that the time was spent mostly into the fluidsynth method that computes
+the music data and puts it into this intermediate buffer, and not so much into openAL itself.</p>
+<a class="header" href="print.html#optimisation-1-compute-music-data-less-often" id="optimisation-1-compute-music-data-less-often"><h1>Optimisation #1: Compute music data less often</h1></a>
+<p>OpenAL and fluidsynth internals are nowhere near my core strengths, therefore the following was found via some
+trial and error method.</p>
+<p>When playing music, the program was doing the following:</p>
+<pre><code>On keyboard event (i.e. when pressing or releasing piano keys):
+  For each key pressed:
+    - tell fluidsynth that key just got pressed
+    - ask fluidsynth to compute the new music data in a buffer
+    - send that buffer to openAL
+
+  For each key released:
+    - tell fluidsynth that key just got un-pressed
+    - ask fluidsynth to compute the new music data in a buffer
+    - send that buffer to openAL
+
+Wait for the next event.
+</code></pre>
+<p>One attempt here was to restructure this code to only ask fluidsynth to compute the music data once per music
+event, in other words, changing the code to the following:</p>
+<pre><code>On keyboard event (i.e. when pressing or releasing piano keys):
+  For each key pressed:
+    - tell fluidsynth that key just got pressed
+
+  For each key released:
+    - tell fluidsynth that key just got un-pressed
+
+  ask fluidsynth to compute the new music data in a buffer
+  send that buffer to openAL
+
+Wait for the next event.
+</code></pre>
+<p>An important thing to do when trying these possible optimisations is to always ensure that the software still
+works. A lot of my attempts resulted in having no music getting played at all, or sometimes being played but
+feeling jerky. I was concerned that this optimisation could lead to only hearing the music from the last key
+instead of all of them. Before looking into performance improvements, correctness need to be maintained.</p>
+<p>On this attempt, if no measurable timing difference would appear, we would know that computing music is linear
+to the number of key changes. If instead things would become about <code>n</code> times faster when there are <code>n</code> keys
+pressed and released, it would mean filling the buffer takes the same amount of time regardless of the number
+of key changes, and therefore should only be done as little times as strictly necessary.</p>
+<p>Measuring this change showed that we were on the side of <code>n</code> times faster. This change alone was enough to
+make music playable at the right speed. With this change, a music event takes about 12ms on firefox, and 20
+on chrome. Of course the exact computation times change based on several factors, e.g. number of key changes
+but also CPU thermal throtting or thread scheduling, of which I have little to no control over. Those numbers
+here are only a ballpark figure, which leads to the next issue: music correctness.</p>
+<p>After this optimisation, the timing for computation was as follow on firefox and chrome.</p>
+<p><img src="./Time_to_compute_music_data.png" alt="Graph showing histogram to time computation" /></p>
+<p>On this graph, each column represent a duration window of half a millisecond.  We can see that firefox manages
+to compute the data most of time in less than 15 milliseconds. The most common duration being between 11.5 and
+12 ms.</p>
+<p>For chrome, the computation usually takes between 20 and 20.5 milliseconds.</p>
+<table><thead><tr><th> Durations in ms </th><th> min  </th><th> average </th><th> stddev </th><th> max  </th></tr></thead><tbody>
+<tr><td> firefox         </td><td> 9.0  </td><td> 12.7    </td><td> 1.3    </td><td> 24.0 </td></tr>
+<tr><td> chrome          </td><td> 12.1 </td><td> 20.5    </td><td> 1.0    </td><td> 35.8 </td></tr>
+</tbody></table>
+<p>This graph was generated by playing <code>Etude as dur -op25 - 01</code> on a 2011 laptop using firefox 102 and chromium
+103 on linux with a kernel version 5.18.</p>
+<a class="header" href="print.html#variance-in-waiting-time-between-events" id="variance-in-waiting-time-between-events"><h1>Variance in waiting time between events:</h1></a>
+<p>As a consequence of the time it takes to compute music data there is a significant delay (of at least 9ms)
+between the moment some music shall be played, and when it actually is. This per-se is not so much of a
+problem. As a user this issue only manifests itself as a latency of a few milliseconds between clicking the play button,
+and the song actually starting. And since this latency is below 40milliseconds, a user will barely notice
+anything.</p>
+<p>A bigger issue though, is that the compute time directly impacts the moment music is played, and this compute time varies
+for each event. The consequence is that events are therefore not played at the correct tempo.</p>
+<p>Let's consider the following case:</p>
+<p><img src="./difference_in_playing_time_1.svg" alt="events played with compute time in between" /></p>
+<p>This image is best viewed when right clicking on it and selecting &quot;open image in new tab&quot;</p>
+<p>On this image, the two small rectangles on the first line represent the moment when the music should be
+played.  The small red rectangles on the third line shows when they are actually played.  Here we can visually
+see that the distance between the two &quot;play music&quot; boxes is not the same as the one between the two events.</p>
+<p>The two music events should be played 96ms apart, but here they are played <code>96 - 35 + 12 = 73</code>ms appart, a
+whooping 23ms too early! 23 ms is a worst case based on the data empirically collected. One important point is
+that since we have no control over this time discrepency, it is possible that one note is played too early and
+the next one too late, or the opposite.</p>
+<p>If we consider that the discrepency can go as high as 23ms, in the case of three quarter notes having to be played
+every 96ms, we can get a case of having the second one played 73ms after the first one instead of 96ms, and then the
+third one being played 119ms after the second one. This is not just playing the song too fast or too slow, <em>it does
+not even respect the tempo!</em></p>
+<a class="header" href="print.html#optimisation-2-didnt-work-precompute-all-the-music-buffers" id="optimisation-2-didnt-work-precompute-all-the-music-buffers"><h1>Optimisation #2 (didn't work): precompute all the music buffers</h1></a>
+<p>An interesting observation that we got with the first optimisation was that the music computation time, which
+has to be fast, is mostly dominated by filling a buffer. And this buffer is used later on. Therefore, one &quot;simple&quot;
+optimisation here it to precompute the buffers of all the music events, and then when playing a music event,
+simply pass the relevant one to openAL. This would fix the issue of uncontrolled variance between music being
+played.</p>
+<p>This failed for two reasons. The first one is due to startup load time. After the optimisation described
+above, computing the buffer for a music event takes about 20ms on chrome. For a song like <code>Etude as dur - op25 - 01</code> from Chopin - which is not even a long song - we are talking of 1209 music events. This multiplied
+by approximately 20ms, means the loading time would be about 24 seconds. This is simply
+unacceptable. Circumventing this issue could be done by having one thread computing the buffers running in
+parallel to the one consuming them. Since the one consuming the event needs to wait between music_events, it
+is pretty much guaranteed that it will never need to wait (except for the very first event) to get a buffer to
+pass to openAL.</p>
+<p>The second issue is related to memory usage. I capped the memory usage of the wasm
+application at 120 MiB which I already think is a lot. Each buffer here take <code>44100 * sizeof(uint16_t) * 6</code>
+bytes which is slightly above half-megabyte. For the Chopin music sheet from above, this would mean using 2GiB
+of memory just for the music data, which I consider unacceptable.</p>
+<p>It would be possible to circumvent this by capping the number of buffers available to never run out of the
+120MiB of memory (which includes the memory used by the app itself for everything else). On firefox, I could
+use about 100 buffers before the app crashes with an <code>out-of-memory</code> errorm. It was approximately 80 on
+chrome. Now comes the issue of finding out how many buffers can be allocated before the app crashes. One way
+would be to simply keep allocating buffers, and catch the <code>std::bad_alloc</code> exception when reaching the
+limit. Unfortunately the memory allocator on wasm doesn't throw <code>std::bad_alloc</code>, instead it simply
+panics. This means that relying on this behaviour is not feasible. Ultimately, I decided not to try to get
+this optimisation working as the benefits were not worth the cost when it would work anyway. It would allow
+for about 2 seconds of pre computed music only. If a music sheet is fast paced enough to require music
+computed in less than 20ms (the slowest time on chrome), this 2 second time window won't probably help much to
+hide the slowness issue from the user, only delay it a bit.</p>
+<a class="header" href="print.html#optimisation-precompute-the-following-music-buffer" id="optimisation-precompute-the-following-music-buffer"><h1>Optimisation: precompute the following music buffer</h1></a>
+<p>In order to fix the variance issue, one has to ensure that the time between the moment music has to played,
+and when it is actually played is always the same. Ideally it has to also be minimal.</p>
+<p>With the table we got after measuring computing time on chrome and firefox we see that the time to compute
+music can cary by as much as 15ms for firefox and 23ms for chrome (<code>max - min</code>).</p>
+<p>In other words, we can have the following situations:</p>
+<p><img src="./events_timeline.svg" alt="timeline of events before precomputing next event" /></p>
+<p>The best way to view this image is to right click on it, and open in a new tab.</p>
+<p>On this graph, we see that two red bars do not have the same length. The top one represent the time passed
+between the two events, in other words when the music should be played, whereas the second one shows how much
+time actually passed and when exactly the music was played.</p>
+<p>On this example, the second event should be played exactly 96ms after the first one, but is actually played
+113ms after.  This is due to the fact that computing the music data for the second event took longer than
+computing the data for the first one, leading to playing the music too late. In the opposite case where
+computing the music for the first event would be slower than computing the data for the second, we would play
+the music too early.</p>
+<p>The solution to avoid this problem relies on the fact that it usually takes less time to compute the music
+data than the time we have to wait before playing the next event. Remember that we deal with music sheets, not
+random events, we can always look ahead to know what is coming.  The software takes advantage of this to
+pre-compute the next buffer that will be used. Consequently, as soon as an event arrives, the relevant music
+is already calculated and the software simply tells openAL to play that buffer, then the software uses its
+available timeslice to compute the data of the next event.</p>
+<p>After this change, the graph of event processing looks like the following;</p>
+<p><img src="./events_timeline_after_precomputing_next_music.svg" alt="timeline of events with precomputation of the next event" /></p>
+<p>As can be seen, now the two red bars have the same lengths with the added benefit that they are much closer to
+each others. The difference in computation time of successive events are now absorbed in the waiting time,
+instead of impacting the moment the music gets played.</p>
+<a class="header" href="print.html#conclusion" id="conclusion"><h1>Conclusion:</h1></a>
+<p>A  good way to write a small article on how to make things fast is to first:</p>
+<ol>
+<li>write something dog slow</li>
+<li>write it correctly</li>
+</ol>
+<p>Note that doing the right thing from the get go doesn't provide for an opportunity to write such article. Might be a case of
+service recovery paradox :-)</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                window.print();
+            })
+        </script>
+        
+
+        
+
+        
+        <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
+        
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+    </body>
+</html>
