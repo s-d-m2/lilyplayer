@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   aria-labelledby="chart-title-mermaid-svg chart-desc-mermaid-svg"
+   role="img"
+   style="max-width: 1904px;"
+   height="600"
+   viewBox="0 0 1904 340"
+   width="100%"
+   id="mermaid-svg"
+   version="1.1"
+   sodipodi:docname="events_timeline2.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs1152" />
+  <sodipodi:namedview
+     id="namedview1150"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="0.43221287"
+     inkscape:cx="1396.3027"
+     inkscape:cy="217.48542"
+     inkscape:window-width="1920"
+     inkscape:window-height="1043"
+     inkscape:window-x="0"
+     inkscape:window-y="18"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="mermaid-svg" />
+  <title
+     id="chart-title-mermaid-svg">
+  Timeline of playing music events</title>
+  <desc
+     id="chart-desc-mermaid-svg" />
+  <style
+     id="style1031">
+    #mermaid-svg {font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif;font-size:16px;fill:#333;}#mermaid-svg .error-icon{fill:#552222;}#mermaid-svg .error-text{fill:#552222;stroke:#552222;}#mermaid-svg .edge-thickness-normal{stroke-width:2px;}#mermaid-svg .edge-thickness-thick{stroke-width:3.5px;}#mermaid-svg .edge-pattern-solid{stroke-dasharray:0;}#mermaid-svg .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-svg .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-svg .marker{fill:#333333;stroke:#333333;}#mermaid-svg .marker.cross{stroke:#333333;}#mermaid-svg svg{font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif;font-size:16px;}#mermaid-svg .mermaid-main-font{font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif;font-family:var(--mermaid-font-family);}#mermaid-svg .exclude-range{fill:#eeeeee;}#mermaid-svg .section{stroke:none;opacity:0.2;}#mermaid-svg .section0{fill:rgba(102, 102, 255, 0.49);}#mermaid-svg .section2{fill:#fff400;}#mermaid-svg .section1,#mermaid-svg .section3{fill:white;opacity:0.2;}#mermaid-svg .sectionTitle0{fill:#333;}#mermaid-svg .sectionTitle1{fill:#333;}#mermaid-svg .sectionTitle2{fill:#333;}#mermaid-svg .sectionTitle3{fill:#333;}#mermaid-svg .sectionTitle{text-anchor:start;font-family:'trebuchet ms',verdana,arial,sans-serif;font-family:var(--mermaid-font-family);}#mermaid-svg .grid .tick{stroke:lightgrey;opacity:0.8;shape-rendering:crispEdges;}#mermaid-svg .grid .tick text{font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif;fill:#333;}#mermaid-svg .grid path{stroke-width:0;}#mermaid-svg .today{fill:none;stroke:red;stroke-width:2px;}#mermaid-svg .task{stroke-width:2;}#mermaid-svg .taskText{text-anchor:middle;font-family:'trebuchet ms',verdana,arial,sans-serif;font-family:var(--mermaid-font-family);}#mermaid-svg .taskTextOutsideRight{fill:black;text-anchor:start;font-family:'trebuchet ms',verdana,arial,sans-serif;font-family:var(--mermaid-font-family);}#mermaid-svg .taskTextOutsideLeft{fill:black;text-anchor:end;}#mermaid-svg .task.clickable{cursor:pointer;}#mermaid-svg .taskText.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#mermaid-svg .taskTextOutsideLeft.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#mermaid-svg .taskTextOutsideRight.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#mermaid-svg .taskText0,#mermaid-svg .taskText1,#mermaid-svg .taskText2,#mermaid-svg .taskText3{fill:white;}#mermaid-svg .task0,#mermaid-svg .task1,#mermaid-svg .task2,#mermaid-svg .task3{fill:#8a90dd;stroke:#534fbc;}#mermaid-svg .taskTextOutside0,#mermaid-svg .taskTextOutside2{fill:black;}#mermaid-svg .taskTextOutside1,#mermaid-svg .taskTextOutside3{fill:black;}#mermaid-svg .active0,#mermaid-svg .active1,#mermaid-svg .active2,#mermaid-svg .active3{fill:#bfc7ff;stroke:#534fbc;}#mermaid-svg .activeText0,#mermaid-svg .activeText1,#mermaid-svg .activeText2,#mermaid-svg .activeText3{fill:black!important;}#mermaid-svg .done0,#mermaid-svg .done1,#mermaid-svg .done2,#mermaid-svg .done3{stroke:grey;fill:lightgrey;stroke-width:2;}#mermaid-svg .doneText0,#mermaid-svg .doneText1,#mermaid-svg .doneText2,#mermaid-svg .doneText3{fill:black!important;}#mermaid-svg .crit0,#mermaid-svg .crit1,#mermaid-svg .crit2,#mermaid-svg .crit3{stroke:#ff8888;fill:red;stroke-width:2;}#mermaid-svg .activeCrit0,#mermaid-svg .activeCrit1,#mermaid-svg .activeCrit2,#mermaid-svg .activeCrit3{stroke:#ff8888;fill:#bfc7ff;stroke-width:2;}#mermaid-svg .doneCrit0,#mermaid-svg .doneCrit1,#mermaid-svg .doneCrit2,#mermaid-svg .doneCrit3{stroke:#ff8888;fill:lightgrey;stroke-width:2;cursor:pointer;shape-rendering:crispEdges;}#mermaid-svg .milestone{transform:rotate(45deg) scale(0.8,0.8);}#mermaid-svg .milestoneText{font-style:italic;}#mermaid-svg .doneCritText0,#mermaid-svg .doneCritText1,#mermaid-svg .doneCritText2,#mermaid-svg .doneCritText3{fill:black!important;}#mermaid-svg .activeCritText0,#mermaid-svg .activeCritText1,#mermaid-svg .activeCritText2,#mermaid-svg .activeCritText3{fill:black!important;}#mermaid-svg .titleText{text-anchor:middle;font-size:18px;fill:#333;font-family:'trebuchet ms',verdana,arial,sans-serif;font-family:var(--mermaid-font-family);}#mermaid-svg :root{--mermaid-font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif;}</style>
+  <g
+     id="g1033"
+     transform="matrix(1.0000243,0,0,1.0996147,15.715379,-98.865378)" />
+  <g
+     id="g1035"
+     transform="matrix(1.0000243,0,0,1.0996147,15.715379,-98.865378)" />
+  <g
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="10px"
+     fill="none"
+     transform="matrix(1.0000243,0,0,1.0996147,90.717197,220.02288)"
+     class="grid"
+     id="g1093">
+    <path
+       d="M 0.5,-255 V 0.5 h 1754 V -255"
+       stroke="currentColor"
+       class="domain"
+       id="path1037" />
+    <g
+       transform="translate(0.5)"
+       opacity="1"
+       class="tick"
+       id="g1043">
+      <line
+         stroke="currentColor"
+         y2="-255"
+         y1="-70"
+         id="line1039"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1041">0ms</text>
+    </g>
+    <g
+       opacity="1"
+       class="tick"
+       transform="translate(215.5)"
+       id="g1049">
+      <line
+         stroke="currentColor"
+         y2="-255"
+         y1="-70"
+         id="line1045"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1047">20ms</text>
+    </g>
+    <g
+       opacity="1"
+       class="tick"
+       transform="translate(430.5)"
+       id="g1055">
+      <line
+         y2="-255"
+         stroke="currentColor"
+         y1="-70"
+         id="line1051"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1053">40ms</text>
+    </g>
+    <g
+       opacity="1"
+       class="tick"
+       transform="translate(644.5)"
+       id="g1061">
+      <line
+         y2="-255"
+         stroke="currentColor"
+         y1="-70"
+         id="line1057"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1059">60ms</text>
+    </g>
+    <g
+       opacity="1"
+       class="tick"
+       transform="translate(859.5)"
+       id="g1067">
+      <line
+         y2="-255"
+         stroke="currentColor"
+         y1="-70"
+         id="line1063"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1065">80ms</text>
+    </g>
+    <g
+       transform="translate(1074.5)"
+       opacity="1"
+       class="tick"
+       id="g1073">
+      <line
+         y2="-255"
+         stroke="currentColor"
+         y1="-70"
+         id="line1069"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1071">100ms</text>
+    </g>
+    <g
+       transform="translate(1289.5)"
+       opacity="1"
+       class="tick"
+       id="g1079">
+      <line
+         y2="-255"
+         stroke="currentColor"
+         y1="-70"
+         id="line1075"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1077">120ms</text>
+    </g>
+    <g
+       transform="translate(1503.5)"
+       opacity="1"
+       class="tick"
+       id="g1085">
+      <line
+         y2="-255"
+         stroke="currentColor"
+         y1="-70"
+         id="line1081"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1083">140ms</text>
+    </g>
+    <g
+       transform="translate(1718.5)"
+       opacity="1"
+       class="tick"
+       id="g1091">
+      <line
+         y2="-255"
+         stroke="currentColor"
+         y1="-70"
+         id="line1087"
+         x1="0"
+         x2="0" />
+      <text
+         style="text-anchor:middle"
+         font-size="10px"
+         stroke="none"
+         dy="1em"
+         fill="#000000"
+         y="-65"
+         id="text1089">160ms</text>
+    </g>
+  </g>
+  <g
+     id="g1107"
+     transform="matrix(1.0000243,0,0,1.0996147,15.715379,-98.865378)">
+    <rect
+       class="section section0"
+       height="24"
+       width="1866.5"
+       y="48"
+       x="0"
+       id="rect1095" />
+    <rect
+       class="section section1"
+       height="24"
+       width="1866.5"
+       x="0"
+       y="144"
+       id="rect1097" />
+    <rect
+       class="section section0"
+       height="24"
+       width="1866.5"
+       y="72"
+       x="0"
+       id="rect1099" />
+    <rect
+       class="section section0"
+       height="24"
+       width="1866.5"
+       y="96"
+       x="0"
+       id="rect1101" />
+    <rect
+       class="section section1"
+       height="24"
+       width="1866.5"
+       x="0"
+       y="168"
+       id="rect1103" />
+    <rect
+       class="section section0"
+       height="24"
+       width="1866.5"
+       y="120"
+       x="0"
+       id="rect1105" />
+  </g>
+  <g
+     id="g1129"
+     transform="matrix(1.0000243,0,0,2.4994837,15.715379,-168.85883)">
+    <rect
+       class="task done0"
+       transform-origin="79.5px 60px"
+       height="20"
+       width="9"
+       y="50"
+       x="75"
+       ry="3"
+       rx="3"
+       id="ev1" />
+    <rect
+       class="task crit1"
+       transform-origin="612px 252px"
+       height="20"
+       x="75"
+       ry="3"
+       rx="3"
+       id="task1"
+       y="164"
+       width="1092" />
+    <rect
+       class="task doneCrit0"
+       transform-origin="191.5px 84px"
+       height="20"
+       width="215"
+       y="74"
+       x="84"
+       ry="3"
+       rx="3"
+       id="cm1" />
+    <rect
+       class="task done0"
+       height="20"
+       width="9"
+       x="299"
+       ry="3"
+       rx="3"
+       id="pm1"
+       transform-origin="303.5px 108px"
+       y="98" />
+    <rect
+       class="task crit1"
+       transform-origin="943px 276px"
+       height="20"
+       x="299"
+       ry="3"
+       rx="3"
+       id="task2"
+       y="188"
+       width="1306" />
+    <rect
+       class="task task0"
+       transform-origin="737.5px 132px"
+       height="20"
+       width="859"
+       y="122"
+       x="308"
+       ry="3"
+       rx="3"
+       id="wev2" />
+    <rect
+       class="task done0"
+       height="20"
+       width="9"
+       x="1167"
+       ry="3"
+       rx="3"
+       id="ev2"
+       y="50"
+       transform-origin="1171.5px 60x" />
+    <rect
+       class="task doneCrit0"
+       transform-origin="1390.5px 180px"
+       height="20"
+       width="429"
+       x="1176"
+       ry="3"
+       rx="3"
+       id="cm2"
+       y="74" />
+    <rect
+       class="task done0"
+       transform-origin="1609.5px 204px"
+       height="20"
+       width="9"
+       x="1605"
+       ry="3"
+       rx="3"
+       id="pm2"
+       y="98" />
+    <rect
+       class="task task0"
+       transform-origin="1721.5px 228px"
+       height="20"
+       width="215"
+       x="1614"
+       ry="3"
+       rx="3"
+       id="wev3"
+       y="122" />
+    <text
+       class="taskTextOutsideRight taskTextOutside0  doneText0 width-77.609375"
+       y="63.5"
+       x="89"
+       font-size="11px"
+       id="ev1-text">Event 1 (t=0ms)</text>
+    <text
+       class="taskText taskText1  critText1 width-95.046875"
+       y="177.5"
+       x="612"
+       font-size="11px"
+       id="task1-text">Expectation (96ms)</text>
+    <text
+       class="taskText taskText0  doneCritText0 width-120.078125"
+       y="87.5"
+       x="191.5"
+       font-size="11px"
+       id="cm1-text">compute music 1 (20ms)</text>
+    <text
+       class="taskTextOutsideRight taskTextOutside0  doneText0 width-61.15625"
+       y="111.5"
+       x="313"
+       font-size="11px"
+       id="pm1-text">Play music 1</text>
+    <text
+       class="taskText taskText1  critText1 width-73.625"
+       y="201.5"
+       x="943"
+       font-size="11px"
+       id="task2-text">Actual (111ms)</text>
+    <text
+       class="taskText taskText0  width-79.9814453125"
+       y="135.5"
+       x="737.5"
+       font-size="11px"
+       id="wev2-text">Wait for event 2</text>
+    <text
+       class="taskTextOutsideRight taskTextOutside0  doneText0 width-83.390625"
+       x="1181"
+       font-size="11px"
+       id="ev2-text"
+       y="63.5">Event 2 (t=96ms)</text>
+    <text
+       class="taskText taskText0  doneCritText0 width-120.078125"
+       x="1390.5"
+       font-size="11px"
+       id="cm2-text"
+       y="87.5">compute music 2 (35ms)</text>
+    <text
+       class="taskTextOutsideRight taskTextOutside0  doneText0 width-61.38671875"
+       x="1619"
+       font-size="11px"
+       id="pm2-text"
+       y="111.5">Play music 2</text>
+    <text
+       class="taskText taskText0  width-79.9814453125"
+       x="1721.5"
+       font-size="11px"
+       id="wev3-text"
+       y="135.5">Wait for event 3</text>
+  </g>
+  <g
+     id="g1139"
+     transform="matrix(1.0000243,0,0,1.0996147,15.715379,-98.865378)">
+    <text
+       class="sectionTitle sectionTitle1"
+       font-size="11px"
+       dy="0em"
+       x="10"
+       y="185"
+       id="text1133"><tspan
+         x="10"
+         alignment-baseline="central"
+         id="tspan1131">time between</tspan></text>
+    <text
+       class="sectionTitle sectionTitle1"
+       font-size="11px"
+       x="10"
+       dy="0em"
+       y="195"
+       id="text1137"><tspan
+         x="10"
+         alignment-baseline="central"
+         id="tspan1135">music</tspan></text>
+  </g>
+  <g
+     class="today"
+     id="g1143"
+     transform="matrix(1.0000243,0,0,1.0996147,15.715379,-98.865378)">
+    <line
+       class="today"
+       y2="315"
+       y1="25"
+       x2="669015"
+       x1="669015"
+       id="line1141" />
+  </g>
+  <text
+     class="titleText"
+     y="-46.741028"
+     x="1310.1765"
+     id="text1145"
+     transform="scale(0.62227227,1.6070136)"
+     style="font-size:31.7908px;stroke-width:2.64923">Timeline of playing music events</text>
+  <style
+     id="style1147">
+    @import url(&quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css&quot;);</style>
+  <metadata
+     id="metadata1330">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>
+  Timeline of playing music events</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>
