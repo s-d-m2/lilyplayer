@@ -117,8 +117,8 @@ QT_STYLE_FILES := ${PROJECT_ROOT_DIR}/qdarkstyle/rc/Vsepartoolbar.png \
 		${PROJECT_ROOT_DIR}/qdarkstyle/style.qss \
 		${RC_FILE}
 
-RESOURCE_CODE := ${OUTPUT_DIR}/generated/resources.cc
-RESOURCE_OBJ :=  ${OUTPUT_DIR}/generated/resources.o
+RESOURCE_CODE := ${GENERATED_DIR}/resources.cc
+RESOURCE_OBJ :=  ${GENERATED_DIR}/resources.o
 
 UI_MAINWINDOW_HH := ${GENERATED_DIR}/ui_mainwindow.hh
 MOC_FILE := ${GENERATED_DIR}/moc_mainwindow.cc
@@ -483,7 +483,7 @@ endef
 
 ${APP_OBJS_OUTPUT_DIR}/mainwindow.o: ${UI_MAINWINDOW_HH}
 
-${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB}
+${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB} ${GENERATED_DIR}
 	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -MD -c -o "$@" "$<"
 	${CP} -- ${APP_OBJS_OUTPUT_DIR}/$*.d ${APP_OBJS_OUTPUT_DIR}/$*.P; \
 	   ${SED} -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -515,19 +515,19 @@ ${GENERATED_DIR}/%.o: ${GENERATED_DIR}/%.cc
 	${CXX} ${CXXFLAGS} $(call specific_flags,"$@") ${INCLUDES} -c -o "$@" "$<"
 
 
-${RESOURCE_CODE}: ${RC_FILE} | ${GENERATED_DIR}
+${RESOURCE_CODE}: ${RC_FILE} ${GENERATED_DIR}
 	cd ${PROJECT_ROOT_DIR}/qdarkstyle && ${RCC} -o "$@" ${RC_FILE}
 
 resource: ${RESOURCE_OBJ}
 
-${UI_MAINWINDOW_HH}: ${PROJECT_ROOT_DIR}/src/mainwindow.ui | ${GENERATED_DIR}
+${UI_MAINWINDOW_HH}: ${PROJECT_ROOT_DIR}/src/mainwindow.ui ${GENERATED_DIR}
 	"${UIC}" -o "$@" "$<"
 	"${SED}" -i '1i // Avoid warnings on generated headers\n#if !defined(__clang__)\n  #pragma GCC system_header\n#endif\n' "$@"
 	"${SED}" -i 's/^#include <mainwindow.h>$$/#include "mainwindow.hh"/' "$@"
 	"${SED}" -i 's/^#include <QtWidgets\/QAction>$$/#include <QtGui\/QAction>/' "$@"
 	"${SED}" -i 's/QObject::connect(\(.*\), MainWindow, qOverload<>(&QMainWindow::/QObject::connect(\1, reinterpret_cast<::MainWindow*>(MainWindow), qOverload<>(\&::MainWindow::/' "$@"
 
-${MOC_FILE}:  ${PROJECT_ROOT_DIR}/src/mainwindow.hh | ${GENERATED_DIR}
+${MOC_FILE}:  ${PROJECT_ROOT_DIR}/src/mainwindow.hh ${GENERATED_DIR}
 	"${MOC}" -o "$@" "$<"
 
 moc: ${MOC_FILE}
