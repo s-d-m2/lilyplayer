@@ -112,7 +112,7 @@ ${FLUIDSYNTH_LIB}: | ${OUTPUT_DIR}
 			-Denable-sdl2=off \
 	                -D CMAKE_BUILD_TYPE=Release \
 	                -D BUILD_SHARED_LIBS=off \
-	                -D CMAKE_C_FLAGS=-D__EMSCRIPTEN_PTHREADS__=1 \
+	                -D CMAKE_C_FLAGS='-D__EMSCRIPTEN_PTHREADS__=1 -ffast-math -msimd128' \
 	                -S "${PROJECT_ROOT_DIR}/3rd-party/fluidsynth-emscripten/" \
 	                -B "${OUTPUT_DIR}/fluidsynth-emscripten" ; \
 	  "${EMMAKE}" "${MAKE}" -C "${OUTPUT_DIR}/fluidsynth-emscripten"  V=1 VERBOSE=1 -j || exit 6 ; \
