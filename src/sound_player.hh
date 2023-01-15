@@ -20,7 +20,7 @@
 class SoundPlayer {
 public:
     SoundPlayer();
-    ~SoundPlayer();
+    ~SoundPlayer() = default;
 
     void note_on(uint8_t pitch);
     void note_off(uint8_t pitch);

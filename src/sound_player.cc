@@ -70,12 +70,6 @@ SoundPlayer::SoundPlayer()
 
 }
 
-SoundPlayer::~SoundPlayer()
-{
-#if USE_OPENAL
-#endif
-}
-
 void SoundPlayer::note_on(uint8_t pitch) {
   fluid_synth_noteon(synth.get(), 0 /* channel */, pitch, 100 /* vel == volume */);
 }
