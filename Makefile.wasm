@@ -144,6 +144,10 @@ ${QT_CORE_LIB}: | ${OUTPUT_DIR}
 	  "${PROJECT_ROOT_DIR}/3rd-party/qt5/init-repository"  \
 	    --module-subset=qtsvg,qtbase,qtimageformats \
 	    -f || exit 3 ; \
+	  if [ -d "${PROJECT_ROOT_DIR}/3rd-party/qt5/qtwebengine" ] ; then \
+	    : 'workaround cmake issue in qtwebengine' ; \
+	    rm -rf "${PROJECT_ROOT_DIR}/3rd-party/qt5/qtwebengine" ; \
+	  fi ; \
 	  cd "${PROJECT_ROOT_DIR}/3rd-party/qt5/" || exit 4 ; \
 	  "${PROJECT_ROOT_DIR}/3rd-party/qt5/configure" \
 	    -static \
