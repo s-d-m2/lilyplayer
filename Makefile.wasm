@@ -80,9 +80,7 @@ JS_PLUGIN_IMPORT_SRC := ${PROJECT_ROOT_DIR}/src/lilyplayer.js_plugin_import.cpp
 JS_PLUGIN_IMPORT_OBJ := ${APP_OBJS_OUTPUT_DIR}/lilyplayer.js_plugin_import.o
 
 LILYPLAYER_JS := ${OUTPUT_DIR}/lilyplayer.js
-LILYPLAYER_FINAL_HTML :=  ${OUTPUT_DIR}/lilyplayer.html
-
-# LILYPLAYER_HTML :=
+LILYPLAYER_HTML := ${OUTPUT_DIR}/lilyplayer.html
 
 all: app
 
@@ -181,12 +179,6 @@ qt: ${QT_CORE_LIB}
 		 "Tip: QT_HOME folder should contain $@ under it"
 	false
 
-
-# ${LILYPLAYER_HTML}: ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg
-# 	"${SED}" -e 's/@APPNAME@/lilyplayer/g' ${QT_HOME}/wasm_32/plugins/platforms/wasm_shell.html > "$@"
-# 	"${CP}" -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtloader.js ${OUTPUT_DIR}
-# 	"${CP}" -f -- ${QT_HOME}/wasm_32/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
-
 loader: ${LILYPLAYER_HTML}
 
 ${APP_OBJS_OUTPUT_DIR}/%.o: ${PROJECT_ROOT_DIR}/src/%.cc | ${APP_OBJS_OUTPUT_DIR}  ${FLUIDSYNTH_LIB} ${QT_CORE_LIB}
@@ -266,18 +258,13 @@ ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_H
 	  --embed-file ${PROJECT_ROOT_DIR}/misc/BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin@BachJS_BWV846_wtk1-prelude1_wtk1-prelude1.bin \
 	  --embed-file ${PROJECT_ROOT_DIR}/misc/ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin@ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin
 
-${LILYPLAYER_FINAL_HTML}: ${LILYPLAYER_JS} ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.head ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.tail
-	${CAT} ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.head > ${OUTPUT_DIR}/lilyplayer.html
-	${ECHO} -n "	var emscriptenModuleSource = atob('" >> ${OUTPUT_DIR}/lilyplayer.html
-	${BASE64} --wrap=0 ${OUTPUT_DIR}/lilyplayer.js >> ${OUTPUT_DIR}/lilyplayer.html
-	${ECHO} "');" >> ${OUTPUT_DIR}/lilyplayer.html
-	${ECHO} -n "	var data = _base64ToArrayBuffer('" >> ${OUTPUT_DIR}/lilyplayer.html
-	${BASE64} --wrap=0 ${OUTPUT_DIR}/lilyplayer.wasm >> ${OUTPUT_DIR}/lilyplayer.html
-	${ECHO} "');" >> ${OUTPUT_DIR}/lilyplayer.html
-	${CAT} ${PROJECT_ROOT_DIR}/misc/lilyplayer.html.tail >> ${OUTPUT_DIR}/lilyplayer.html
 
+${LILYPLAYER_HTML}: ${LILYPLAYER_JS}
+	"${SED}" -e 's/@APPNAME@/lilyplayer/g'  ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/wasm_shell.html > "$@"
+	"${CP}" -f -- ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/qtloader.js ${OUTPUT_DIR}
+	"${CP}" -f -- ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
 
-app: ${LILYPLAYER_FINAL_HTML}
+app: ${LILYPLAYER_HTML}
 
 clean:
 	[ -d "${OUTPUT_DIR}" ] && rm -rf "${OUTPUT_DIR}"
