@@ -23,8 +23,11 @@ MAKE := make
 CAT := cat
 BASE64 := base64
 ECHO := echo
+GAWK := awk
+REALPATH := realpath
+ZSTD := zstd
 
-PROJECT_ROOT_DIR := $(shell realpath .)
+PROJECT_ROOT_DIR := $(shell ${REALPATH} .)
 OUTPUT_DIR := ${PROJECT_ROOT_DIR}/build_dir_for_wasm_output
 
 APP_OBJS_OUTPUT_DIR := ${OUTPUT_DIR}/app_objs
@@ -54,7 +57,7 @@ FLUIDSYNTH_INCLUDES := -isystem ${OUTPUT_DIR}/fluidsynth-emscripten/include \
 INCLUDES := ${QT_INCLUDES} ${FLUIDSYNTH_INCLUDES} \
 	    -I ${GENERATED_DIR}
 
-CXXFLAGS := -pthread -O2 -std=c++17
+CXXFLAGS := -msimd128 -pthread -O3 -std=c++17
 
 # ## Need to install qtsharedtools with the maintenance tools
 
@@ -81,6 +84,8 @@ JS_PLUGIN_IMPORT_OBJ := ${APP_OBJS_OUTPUT_DIR}/lilyplayer.js_plugin_import.o
 
 LILYPLAYER_JS := ${OUTPUT_DIR}/lilyplayer.js
 LILYPLAYER_HTML := ${OUTPUT_DIR}/lilyplayer.html
+
+ZSTD_JS := ${OUTPUT_DIR}/zstd-emscripten/emscripten/zstd.js
 
 all: app
 
@@ -165,6 +170,7 @@ ${QT_CORE_LIB}: | ${OUTPUT_DIR}
 	    -xplatform wasm-emscripten \
 	    -opensource \
 	    -confirm-license \
+	    -no-gstreamer \
 	    -submodules qtgui,qtwidgets,qtsvg,qtbase \
 	    -- -B "${OUTPUT_DIR}/qt" || exit 5 ; \
 	  "${NINJA}" --verbose -C "${OUTPUT_DIR}/qt" || exit 6 ; \
@@ -199,6 +205,10 @@ ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB
 	${EMCXX} ${CXXFLAGS} ${INCLUDES} -c -o "$@" "$<"
 
 js_plugin_import: ${JS_PLUGIN_IMPORT_OBJ}
+
+${ZSTD_JS}: | ${OUTPUT_DIR}
+	${EMCMAKE} ${CMAKE} -S ${PROJECT_ROOT_DIR}/3rd-party/zstd-emscripten/cmake -B ${OUTPUT_DIR}/zstd-emscripten -DCMAKE_C_FLAGS='-msimd128 -pthread'  -DCMAKE_BUILD_TYPE=Release
+	${MAKE} -C ${OUTPUT_DIR}/zstd-emscripten zstd
 
 ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT_OBJ}
 	${EMCC} \
@@ -259,10 +269,28 @@ ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_H
 	  --embed-file ${PROJECT_ROOT_DIR}/misc/ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin@ChopinFF_O25_chopin-op-25-01_chopin-op-25-01.bin
 
 
-${LILYPLAYER_HTML}: ${LILYPLAYER_JS}
-	"${SED}" -e 's/@APPNAME@/lilyplayer/g'  ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/wasm_shell.html > "$@"
-	"${CP}" -f -- ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/qtloader.js ${OUTPUT_DIR}
-	"${CP}" -f -- ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}
+${LILYPLAYER_HTML}: ${LILYPLAYER_JS} ${ZSTD_JS}
+	"${MKDIR}" -p "${OUTPUT_DIR}/dist"
+	# "${SED}" -e 's/@APPNAME@/lilyplayer/g'  ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/wasm_shell.html > "$@"
+	# "${CP}" -f -- ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/qtloader.js ${OUTPUT_DIR}/dist
+	"${CP}" -f -- ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}/dist
+	#
+	${CP} -f -- ${OUTPUT_DIR}/zstd-emscripten/emscripten/zstd.wasm ${OUTPUT_DIR}/dist
+	${CP} -f -- ${OUTPUT_DIR}/zstd-emscripten/emscripten/zstd.worker.js ${OUTPUT_DIR}/dist
+	#
+	${CP} -f -- ${OUTPUT_DIR}/lilyplayer.js ${OUTPUT_DIR}/dist
+	${CP} -f -- ${OUTPUT_DIR}/lilyplayer.worker.js ${OUTPUT_DIR}/dist
+	${ZSTD} -10 -f -o ${OUTPUT_DIR}/dist/lilyplayer.wasm.zst ${OUTPUT_DIR}/lilyplayer.wasm
+	#
+	#
+	${PROJECT_ROOT_DIR}/src/gen_html_file.sh \
+	  --html-template ${PROJECT_ROOT_DIR}/src/lilyplayer.html \
+	  --zstd-js-file  ${ZSTD_JS} \
+	  --output-file   ${OUTPUT_DIR}/dist/lilyplayer.html \
+	  --compressed-wasm-file ${OUTPUT_DIR}/dist/lilyplayer.wasm.zst \
+	  --uncompressed-wasm-file ${OUTPUT_DIR}/lilyplayer.wasm \
+	  --gawk-command  ${GAWK}
+
 
 app: ${LILYPLAYER_HTML}
 
