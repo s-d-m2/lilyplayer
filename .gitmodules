@@ -7,3 +7,6 @@
 [submodule "3rd-party/qt5"]
 	path = 3rd-party/qt5
 	url = git://code.qt.io/qt/qt5.git
+[submodule "3rd-party/zstd-emscripten"]
+	path = 3rd-party/zstd-emscripten
+	url = https://github.com/kig/zstd-emscripten
