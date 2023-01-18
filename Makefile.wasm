@@ -207,8 +207,17 @@ ${JS_PLUGIN_IMPORT_OBJ}: ${JS_PLUGIN_IMPORT_SRC} ${FLUIDSYNTH_LIB} ${QT_CORE_LIB
 js_plugin_import: ${JS_PLUGIN_IMPORT_OBJ}
 
 ${ZSTD_JS}: | ${OUTPUT_DIR}
-	${EMCMAKE} ${CMAKE} -S ${PROJECT_ROOT_DIR}/3rd-party/zstd-emscripten/cmake -B ${OUTPUT_DIR}/zstd-emscripten -DCMAKE_C_FLAGS='-msimd128 -pthread'  -DCMAKE_BUILD_TYPE=Release
-	${MAKE} -C ${OUTPUT_DIR}/zstd-emscripten zstd
+	set -eux ; \
+	if [ -e "$@" ] ; then \
+	  echo "$@ already exists. Remove it to rebuild it." >&2 ; \
+	else \
+	  ${EMCMAKE} ${CMAKE} \
+	    -S ${PROJECT_ROOT_DIR}/3rd-party/zstd-emscripten/cmake \
+	    -B ${OUTPUT_DIR}/zstd-emscripten \
+	    -DCMAKE_C_FLAGS='-msimd128' \
+	    -DCMAKE_BUILD_TYPE=Release ; \
+	  ${MAKE} -C ${OUTPUT_DIR}/zstd-emscripten zstd ; \
+	fi
 
 ${LILYPLAYER_JS}: ${QT_CORE_LIB} ${FLUIDSYNTH_LIB} ${APP_OBJS} ${UI_MAINWINDOW_HH} ${MOC_OBJ} ${RESOURCE_OBJ} ${JS_PLUGIN_IMPORT_OBJ}
 	${EMCC} \
@@ -276,7 +285,6 @@ ${LILYPLAYER_HTML}: ${LILYPLAYER_JS} ${ZSTD_JS}
 	"${CP}" -f -- ${OUTPUT_DIR}/qt/qtbase/plugins/platforms/qtlogo.svg ${OUTPUT_DIR}/dist
 	#
 	${CP} -f -- ${OUTPUT_DIR}/zstd-emscripten/emscripten/zstd.wasm ${OUTPUT_DIR}/dist
-	${CP} -f -- ${OUTPUT_DIR}/zstd-emscripten/emscripten/zstd.worker.js ${OUTPUT_DIR}/dist
 	#
 	${CP} -f -- ${OUTPUT_DIR}/lilyplayer.js ${OUTPUT_DIR}/dist
 	${CP} -f -- ${OUTPUT_DIR}/lilyplayer.worker.js ${OUTPUT_DIR}/dist
