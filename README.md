@@ -10,7 +10,7 @@ LIVE demo!
 
 You can see lilyplayer in action directly in your browser at [https://lilyplayer.pages.dev/](https://lilyplayer.pages.dev/)!
 
-It takes some time to load as it downloads about 50MiB at the start.
+It takes some time to load as it downloads about 20MiB at the start.
 
 Once loaded, click, "input", then "select file". Suitable files for the application are available at
 https://github.com/s-d-m/precompiled_music_sheets_for_lilyplayer . Simply download music sheets you like
