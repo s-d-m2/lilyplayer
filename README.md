@@ -8,7 +8,7 @@ Lilyplayer plays piano music sheets, as can be seen below
 LIVE demo!
 ----
 
-You can see lilyplayer in action directly in your browser at https://lilyplayer.shuttleapp.rs/ !
+You can see lilyplayer in action directly in your browser at [https://lilyplayer.pages.dev/](https://lilyplayer.pages.dev/)!
 
 It takes some time to load as it downloads about 50MiB at the start.
 
