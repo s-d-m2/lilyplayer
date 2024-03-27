@@ -21,6 +21,8 @@ Then set and export the QT\_HOME variable to where you installed it. $QT\_HOME m
 To compile to WebAssembly, you will need an Emscripten compiler.
 Follow the instructions at `https://emscripten.org/docs/getting_started/downloads.html`
 
+Note however that this requires `emcc` version `14.18_2`, not the latest version.
+
 Don't forget to run:
 ```
 "/path/to/where/you/downloaded/emscripten/emsdk" activate
